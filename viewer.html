@@ -64,17 +64,28 @@
       background:white;top:3px;left:3px;transition:left 0.25s;}
     .toggle.on::after{left:19px;}
 
-    /* Nav cube */
-    #nav-cube{
-      position:fixed;bottom:200px;right:20px;width:90px;height:90px;z-index:150;
+    /* ViewCube */
+    #viewcube{
+      position:fixed;top:76px;left:20px;
+      width:110px;
+      background:var(--panel);border:1px solid var(--border);border-radius:10px;
+      overflow:hidden;backdrop-filter:blur(14px);z-index:150;
+      box-shadow:0 8px 32px rgba(0,0,0,0.5);
+      padding:10px;
     }
-    #nav-canvas{width:90px;height:90px;border-radius:8px;border:1px solid var(--border);}
+    .vc-label{font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;display:block;}
+    .vc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;}
+    .vc-btn{
+      background:rgba(255,255,255,0.05);border:1px solid var(--border);
+      border-radius:5px;padding:6px 0;font-size:9px;color:var(--muted);
+      letter-spacing:0.08em;text-align:center;cursor:pointer;transition:all 0.15s;
+    }
+    .vc-btn:hover{color:var(--gold);border-color:rgba(201,168,76,0.4);background:rgba(201,168,76,0.08);}
+    .vc-btn.wide{grid-column:span 3;}
+    .vc-btn.mid{grid-column:span 1;}
 
     /* View buttons */
-    #view-btns{
-      position:fixed;bottom:80px;right:20px;
-      display:flex;flex-direction:column;gap:6px;z-index:150;
-    }
+    #view-btns{display:none;}
     .view-btn{
       background:var(--panel);border:1px solid var(--border);border-radius:6px;
       padding:5px 10px;font-size:9px;color:var(--muted);letter-spacing:0.12em;
@@ -170,18 +181,21 @@
   </div>
 </div>
 
-<!-- Nav cube -->
-<div id="nav-cube">
-  <canvas id="nav-canvas" width="90" height="90"></canvas>
+<!-- ViewCube - Revit style -->
+<div id="viewcube">
+  <span class="vc-label">Navigate</span>
+  <div class="vc-grid">
+    <div class="vc-btn wide" onclick="setView('top')">TOP</div>
+    <div class="vc-btn wide" onclick="setView('iso')">HOME</div>
+    <div class="vc-btn mid" onclick="setView('left')">L</div>
+    <div class="vc-btn mid" onclick="setView('front')">FRONT</div>
+    <div class="vc-btn mid" onclick="setView('right')">R</div>
+    <div class="vc-btn wide" onclick="setView('back')">BACK</div>
+    <div class="vc-btn wide" onclick="setView('bottom')">BOTTOM</div>
+    <div class="vc-btn wide" onclick="resetView()">⟳ RESET</div>
+  </div>
 </div>
-
-<!-- View preset buttons -->
-<div id="view-btns">
-  <div class="view-btn" onclick="setView('top')">⊙ Top</div>
-  <div class="view-btn" onclick="setView('front')">◧ Front</div>
-  <div class="view-btn" onclick="setView('iso')">⬡ Iso</div>
-  <div class="view-btn" onclick="resetView()">⟳ Reset</div>
-</div>
+<div id="view-btns"></div>
 
 <div id="stats-bar">
   <div class="stat-pill">Lat <em>21.4738°N</em></div>
@@ -366,67 +380,27 @@
     renderer.setSize(w, h);
   });
 
-  // ── Nav cube ──
-  const navCanvas   = document.getElementById('nav-canvas');
-  const navRenderer = new THREE.WebGLRenderer({ canvas: navCanvas, antialias: true, alpha: true });
-  navRenderer.setPixelRatio(window.devicePixelRatio);
-  navRenderer.setSize(90, 90);
-  navRenderer.setClearColor(0x000000, 0);
-
-  const navScene  = new THREE.Scene();
-  const navCamera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
-  navCamera.position.set(2.5, 2.5, 2.5);
-  navCamera.lookAt(0, 0, 0);
-
-  // Cube faces
-  const faceColors = [0xC9A84C,0xA8734A,0x7EC8E3,0x5A9EB8,0xA8D8A8,0x5A8A5A];
-  const cubeGeo = new THREE.BoxGeometry(1.4, 1.4, 1.4);
-  const cubeMats = faceColors.map(c => new THREE.MeshPhongMaterial({ color: c, transparent: true, opacity: 0.85 }));
-  const navCube = new THREE.Mesh(cubeGeo, cubeMats);
-  navScene.add(navCube);
-  navScene.add(new THREE.AmbientLight(0xffffff, 0.6));
-  const navLight = new THREE.DirectionalLight(0xffffff, 0.8);
-  navLight.position.set(3, 4, 3);
-  navScene.add(navLight);
-
-  // Face labels on cube
-  const labels = ['R','L','T','B','F','K'];
-  labels.forEach((lbl, i) => {
-    const c2 = document.createElement('canvas');
-    c2.width = 64; c2.height = 64;
-    const ctx = c2.getContext('2d');
-    ctx.fillStyle = 'rgba(0,0,0,0)';
-    ctx.fillRect(0,0,64,64);
-    ctx.fillStyle = 'white';
-    ctx.font = 'bold 28px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(lbl, 32, 32);
-    cubeMats[i].map = new THREE.CanvasTexture(c2);
-    cubeMats[i].needsUpdate = true;
-  });
-
   // ── Animate ──
   (function animate() {
     requestAnimationFrame(animate);
     controls.update();
     renderer.render(scene, camera);
-    // Sync nav cube rotation with main camera
-    navCube.quaternion.copy(camera.quaternion).invert();
-    navRenderer.render(navScene, navCamera);
   })();
 
-  // ── Bin parser — stride=17, 8-bit RGB ──
-  function parseBin(buffer, scale, offX, offY, offZ, posArr, colArr) {
-    const view = new DataView(buffer);
+  // ── Bin parser ──
+  // Points stored as int32 relative to octree boundingBox origin
+  // Real world = raw * scale + obb.lx/ly/lz
+  // Display = world - scene_centre
+  function parseBin(buffer, scale, oblx, obly, oblz, cx, cy, cz, posArr, colArr) {
+    const view   = new DataView(buffer);
     const STRIDE = 17;
-    const n = Math.floor(buffer.byteLength / STRIDE);
+    const n      = Math.floor(buffer.byteLength / STRIDE);
     for (let i = 0; i < n; i++) {
       const o = i * STRIDE;
       posArr.push(
-        view.getInt32(o,     true) * scale - offX,
-        view.getInt32(o + 4, true) * scale - offY,
-        view.getInt32(o + 8, true) * scale - offZ
+        view.getInt32(o,     true) * scale + oblx - cx,
+        view.getInt32(o + 4, true) * scale + obly - cy,
+        view.getInt32(o + 8, true) * scale + oblz - cz
       );
       colArr.push(
         view.getUint8(o + 12) / 255,
@@ -442,16 +416,20 @@
     const meta  = await fetch('./pointcloud/cloud.js').then(r => r.json());
     const scale = meta.scale;
     const bb    = meta.tightBoundingBox;
-    // Centre points around origin for stable rendering
-    const offX  = (bb.lx + bb.ux) / 2;
-    const offY  = (bb.ly + bb.uy) / 2;
-    const offZ  = bb.lz; // use floor as Z origin so building sits on Z=0
+    const obb   = meta.boundingBox; // octree origin - points are relative to this
+
+    // Points are stored as integers relative to boundingBox origin
+    // Real world pos = raw * scale + obb.lx/ly/lz
+    // We then subtract the scene centre for display
+    const cx = (bb.lx + bb.ux) / 2;
+    const cy = (bb.ly + bb.uy) / 2;
+    const cz = bb.lz; // Z floor = ground level
 
     const posArr = [], colArr = [];
     for (let i = 0; i < ALL_BINS.length; i++) {
       try {
         const buf = await fetch('./pointcloud/' + ALL_BINS[i]).then(r => r.arrayBuffer());
-        parseBin(buf, scale, offX, offY, offZ, posArr, colArr);
+        parseBin(buf, scale, obb.lx, obb.ly, obb.lz, cx, cy, cz, posArr, colArr);
       } catch(e) { /* skip missing */ }
       setProgress(5 + Math.round((i / ALL_BINS.length) * 70), `Loading points… ${i+1}/${ALL_BINS.length}`);
     }
@@ -490,11 +468,16 @@
 
   // ── View presets ──
   function setView(v) {
-    const d = Math.max(sceneSize.x, sceneSize.y, sceneSize.z) * 1.2;
-    controls.target.copy(sceneCenter);
-    if (v === 'top')   camera.position.set(sceneCenter.x, sceneCenter.y, sceneCenter.z + d * 1.5);
-    if (v === 'front') camera.position.set(sceneCenter.x, sceneCenter.y - d * 1.5, sceneCenter.z + sceneSize.z * 0.3);
-    if (v === 'iso')   camera.position.set(sceneCenter.x + d, sceneCenter.y - d, sceneCenter.z + d * 0.7);
+    const d = Math.max(sceneSize.x, sceneSize.y, sceneSize.z) * 1.4;
+    const c = sceneCenter;
+    controls.target.copy(c);
+    if (v === 'top')    camera.position.set(c.x, c.y, c.z + d * 1.8);
+    if (v === 'bottom') camera.position.set(c.x, c.y, c.z - d * 1.8);
+    if (v === 'front')  camera.position.set(c.x, c.y - d * 1.5, c.z + sceneSize.z * 0.3);
+    if (v === 'back')   camera.position.set(c.x, c.y + d * 1.5, c.z + sceneSize.z * 0.3);
+    if (v === 'left')   camera.position.set(c.x - d * 1.5, c.y, c.z + sceneSize.z * 0.3);
+    if (v === 'right')  camera.position.set(c.x + d * 1.5, c.y, c.z + sceneSize.z * 0.3);
+    if (v === 'iso')    camera.position.set(c.x + d, c.y - d, c.z + d * 0.7);
     controls.update();
   }
   function resetView() { fitCamera(); }
@@ -505,34 +488,33 @@
       new THREE.GLTFLoader().load('./bim_model.glb', gltf => {
         bimMesh = gltf.scene;
 
-        // Revit exports Y-up in feet (scale=0.3048 already in nodes).
-        // Our scene is Z-up (matching Metashape point cloud).
-        // Fix: rotate -90° around X so Y becomes Z (up).
+        // GLB/Revit is Y-up. Scene is Z-up (Metashape).
+        // rotation.x = -PI/2 maps GLB Y→scene Z (up axis corrected)
         bimMesh.rotation.x = -Math.PI / 2;
         bimMesh.updateMatrixWorld(true);
 
-        // Now measure after rotation
-        const rawBB   = new THREE.Box3().setFromObject(bimMesh);
-        const rawSize = new THREE.Vector3();
-        rawBB.getSize(rawSize);
+        // Measure after rotation
+        const bb1   = new THREE.Box3().setFromObject(bimMesh);
+        const size1 = new THREE.Vector3();
+        bb1.getSize(size1);
 
-        // Scale to fit point cloud footprint
-        const s = Math.min(
-          (pcInfo.size.x * 0.85) / rawSize.x,
-          (pcInfo.size.y * 0.85) / rawSize.y
-        );
+        // BIM footprint is ~43m x ~44m, PC is ~111m x ~113m
+        // Scale to match BIM to a reasonable size relative to PC
+        // Use Z height to calibrate: BIM height should match PC height (~24m)
+        const targetH = pcInfo.size.z;
+        const s = targetH / size1.z;
         bimMesh.scale.setScalar(s);
         bimMesh.updateMatrixWorld(true);
 
-        // Re-measure after scale, then centre on point cloud
-        const finalBB  = new THREE.Box3().setFromObject(bimMesh);
-        const finalCtr = new THREE.Vector3();
-        finalBB.getCenter(finalCtr);
+        // Re-measure and centre over point cloud
+        const bb2  = new THREE.Box3().setFromObject(bimMesh);
+        const ctr2 = new THREE.Vector3();
+        bb2.getCenter(ctr2);
 
         bimMesh.position.set(
-          pcInfo.center.x - finalCtr.x,
-          pcInfo.center.y - finalCtr.y,
-          pcInfo.box.min.z - finalBB.min.z
+          pcInfo.center.x - ctr2.x,
+          pcInfo.center.y - ctr2.y,
+          pcInfo.box.min.z - bb2.min.z
         );
 
         bimMesh.traverse(child => {
