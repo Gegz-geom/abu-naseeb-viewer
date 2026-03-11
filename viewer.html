@@ -4,448 +4,610 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3D Viewer — Abu Naseeb Al-Baghdaddiya Family House</title>
-
-  <!-- Three.js r134 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
-
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
-
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --gold: #C9A84C; --gold-light: #E8C97A;
-      --dark: #0A0A0F; --panel: rgba(10,10,15,0.93);
-      --text: #F0EDE6; --muted: #7A7870; --border: rgba(201,168,76,0.15);
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --gold:#C9A84C;--dark:#0A0A0F;--panel:rgba(10,10,15,0.93);
+      --text:#F0EDE6;--muted:#7A7870;--border:rgba(201,168,76,0.15);
     }
-    html, body { width:100%; height:100%; overflow:hidden; background:var(--dark); font-family:'DM Mono',monospace; }
+    html,body{width:100%;height:100%;overflow:hidden;background:var(--dark);font-family:'DM Mono',monospace;}
+    #canvas-container{position:fixed;top:56px;left:0;right:0;bottom:0;}
+    canvas{display:block;}
 
-    #canvas-container { position:fixed; top:56px; left:0; right:0; bottom:0; }
-    canvas { display:block; }
-
-    #header {
-      position:fixed; top:0; left:0; right:0; z-index:200; height:56px;
-      background:var(--panel); border-bottom:1px solid var(--border);
-      display:flex; align-items:center; justify-content:space-between;
-      padding:0 24px; backdrop-filter:blur(12px);
+    /* Header */
+    #header{
+      position:fixed;top:0;left:0;right:0;z-index:200;height:56px;
+      background:var(--panel);border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 24px;backdrop-filter:blur(12px);
     }
-    .back-btn {
-      display:flex; align-items:center; gap:8px;
-      font-size:11px; color:var(--muted); letter-spacing:0.1em;
-      cursor:pointer; background:none; border:none; transition:color 0.2s;
-    }
-    .back-btn:hover { color:var(--gold); }
-    .header-center { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; color:var(--text); letter-spacing:0.04em; }
-    .header-center span { color:var(--gold); }
-    .point-count { font-size:10px; color:var(--muted); letter-spacing:0.1em; }
-    .point-count em { color:var(--gold); font-style:normal; }
+    .back-btn{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);
+      letter-spacing:0.1em;cursor:pointer;background:none;border:none;transition:color 0.2s;}
+    .back-btn:hover{color:var(--gold);}
+    .header-center{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text);letter-spacing:0.04em;}
+    .header-center span{color:var(--gold);}
+    .point-count{font-size:10px;color:var(--muted);letter-spacing:0.1em;}
+    .point-count em{color:var(--gold);font-style:normal;}
 
-    #layer-panel {
-      position:fixed; top:76px; right:20px; width:220px;
-      background:var(--panel); border:1px solid var(--border); border-radius:10px;
-      overflow:hidden; backdrop-filter:blur(14px); z-index:150;
+    /* Layer Panel */
+    #layer-panel{
+      position:fixed;top:76px;right:20px;width:220px;
+      background:var(--panel);border:1px solid var(--border);border-radius:10px;
+      overflow:hidden;backdrop-filter:blur(14px);z-index:150;
       box-shadow:0 8px 32px rgba(0,0,0,0.5);
     }
-    .panel-header { padding:14px 16px 10px; border-bottom:1px solid var(--border); }
-    .panel-header-label { font-size:9px; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold); margin-bottom:2px; }
-    .panel-header-title { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; color:var(--text); }
-
-    .layer-item {
-      padding:12px 16px; border-bottom:1px solid rgba(201,168,76,0.06);
-      display:flex; align-items:center; justify-content:space-between;
-      cursor:pointer; transition:background 0.15s;
+    .panel-header{padding:14px 16px 10px;border-bottom:1px solid var(--border);}
+    .panel-header-label{font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:2px;}
+    .panel-header-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text);}
+    .layer-item{
+      padding:12px 16px;border-bottom:1px solid rgba(201,168,76,0.06);
+      display:flex;align-items:center;justify-content:space-between;
+      cursor:pointer;transition:background 0.15s;
     }
-    .layer-item:last-child { border-bottom:none; }
-    .layer-item:hover { background:rgba(201,168,76,0.04); }
-    .layer-left { display:flex; align-items:center; gap:10px; }
-    .layer-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-    .dot-pc  { background:#7EC8E3; box-shadow:0 0 6px rgba(126,200,227,0.5); }
-    .dot-bim { background:#A8D8A8; box-shadow:0 0 6px rgba(168,216,168,0.5); }
-    .dot-img { background:#F4C97A; box-shadow:0 0 6px rgba(244,201,122,0.5); }
-    .layer-name { font-size:11px; color:var(--text); letter-spacing:0.05em; }
-    .layer-sub  { font-size:9px;  color:var(--muted); letter-spacing:0.08em; margin-top:1px; }
+    .layer-item:last-child{border-bottom:none;}
+    .layer-item:hover{background:rgba(201,168,76,0.04);}
+    .layer-left{display:flex;align-items:center;gap:10px;}
+    .layer-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+    .dot-pc{background:#7EC8E3;box-shadow:0 0 6px rgba(126,200,227,0.5);}
+    .dot-bim{background:#A8D8A8;box-shadow:0 0 6px rgba(168,216,168,0.5);}
+    .dot-img{background:#F4C97A;box-shadow:0 0 6px rgba(244,201,122,0.5);}
+    .layer-name{font-size:11px;color:var(--text);letter-spacing:0.05em;}
+    .layer-sub{font-size:9px;color:var(--muted);letter-spacing:0.08em;margin-top:1px;}
+    .toggle{width:34px;height:18px;background:rgba(255,255,255,0.08);border-radius:9px;
+      position:relative;transition:background 0.25s;flex-shrink:0;}
+    .toggle.on{background:var(--gold);}
+    .toggle::after{content:'';position:absolute;width:12px;height:12px;border-radius:50%;
+      background:white;top:3px;left:3px;transition:left 0.25s;}
+    .toggle.on::after{left:19px;}
 
-    .toggle {
-      width:34px; height:18px; background:rgba(255,255,255,0.08);
-      border-radius:9px; position:relative; transition:background 0.25s; flex-shrink:0;
+    /* Nav cube */
+    #nav-cube{
+      position:fixed;bottom:80px;right:20px;width:90px;height:90px;z-index:150;
     }
-    .toggle.on { background:var(--gold); }
-    .toggle::after {
-      content:''; position:absolute; width:12px; height:12px;
-      border-radius:50%; background:white; top:3px; left:3px; transition:left 0.25s;
+    #nav-canvas{width:90px;height:90px;border-radius:8px;border:1px solid var(--border);}
+
+    /* View buttons */
+    #view-btns{
+      position:fixed;bottom:20px;right:20px;
+      display:flex;flex-direction:column;gap:6px;z-index:150;
     }
-    .toggle.on::after { left:19px; }
-
-    #stats-bar { position:fixed; bottom:20px; left:20px; display:flex; gap:10px; z-index:150; }
-    .stat-pill {
-      background:var(--panel); border:1px solid var(--border); border-radius:20px;
-      padding:5px 12px; font-size:10px; color:var(--muted); letter-spacing:0.08em; backdrop-filter:blur(8px);
+    .view-btn{
+      background:var(--panel);border:1px solid var(--border);border-radius:6px;
+      padding:5px 10px;font-size:9px;color:var(--muted);letter-spacing:0.12em;
+      text-transform:uppercase;cursor:pointer;transition:all 0.2s;backdrop-filter:blur(8px);
+      white-space:nowrap;
     }
-    .stat-pill em { color:var(--text); font-style:normal; }
+    .view-btn:hover{color:var(--gold);border-color:rgba(201,168,76,0.4);}
 
-    #hint { position:fixed; bottom:20px; right:20px; font-size:10px; color:var(--muted); letter-spacing:0.08em; z-index:150; text-align:right; line-height:1.9; }
+    /* Stats */
+    #stats-bar{position:fixed;bottom:20px;left:20px;display:flex;gap:10px;z-index:150;}
+    .stat-pill{
+      background:var(--panel);border:1px solid var(--border);border-radius:20px;
+      padding:5px 12px;font-size:10px;color:var(--muted);letter-spacing:0.08em;backdrop-filter:blur(8px);
+    }
+    .stat-pill em{color:var(--text);font-style:normal;}
 
-    #loading-overlay {
-      position:fixed; inset:0; z-index:300; background:var(--dark);
-      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px;
+    /* Hint */
+    #hint{position:fixed;bottom:60px;left:20px;font-size:10px;color:var(--muted);
+      letter-spacing:0.08em;z-index:150;line-height:1.9;}
+
+    /* Loading */
+    #loading-overlay{
+      position:fixed;inset:0;z-index:300;background:var(--dark);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
       transition:opacity 0.8s;
     }
-    #loading-overlay.hidden { opacity:0; pointer-events:none; }
-    .loading-logo { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; color:var(--text); letter-spacing:0.06em; }
-    .loading-logo span { color:var(--gold); }
-    .loading-bar-track { width:200px; height:2px; background:rgba(255,255,255,0.08); border-radius:2px; overflow:hidden; }
-    .loading-bar-fill  { height:100%; background:var(--gold); border-radius:2px; width:0%; transition:width 0.3s ease; }
-    .loading-text { font-size:10px; color:var(--muted); letter-spacing:0.15em; text-transform:uppercase; }
+    #loading-overlay.hidden{opacity:0;pointer-events:none;}
+    .loading-logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--text);letter-spacing:0.06em;}
+    .loading-logo span{color:var(--gold);}
+    .loading-bar-track{width:200px;height:2px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;}
+    .loading-bar-fill{height:100%;background:var(--gold);border-radius:2px;width:0%;transition:width 0.3s ease;}
+    .loading-text{font-size:10px;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase;}
 
-    #img-modal {
-      display:none; position:fixed; inset:0; z-index:500;
-      background:rgba(0,0,0,0.85); backdrop-filter:blur(8px);
-      align-items:center; justify-content:center;
+    /* Drone modal */
+    #img-modal{
+      display:none;position:fixed;inset:0;z-index:500;
+      background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);
+      align-items:center;justify-content:center;
     }
-    #img-modal.show { display:flex; }
-    #img-modal img { max-width:88vw; max-height:85vh; border-radius:8px; border:1px solid var(--border); box-shadow:0 24px 80px rgba(0,0,0,0.8); }
-    .modal-close { position:absolute; top:24px; right:28px; font-size:22px; color:var(--muted); cursor:pointer; background:none; border:none; transition:color 0.2s; }
-    .modal-close:hover { color:var(--text); }
-    .modal-label { position:absolute; bottom:32px; left:50%; transform:translateX(-50%); font-size:10px; color:var(--muted); letter-spacing:0.15em; text-transform:uppercase; white-space:nowrap; }
+    #img-modal.show{display:flex;}
+    #img-modal img{max-width:88vw;max-height:85vh;border-radius:8px;border:1px solid var(--border);box-shadow:0 24px 80px rgba(0,0,0,0.8);}
+    .modal-close{position:absolute;top:24px;right:28px;font-size:22px;color:var(--muted);cursor:pointer;background:none;border:none;transition:color 0.2s;}
+    .modal-close:hover{color:var(--text);}
+    .modal-label{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);
+      font-size:10px;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase;white-space:nowrap;}
   </style>
 </head>
 <body>
 
-  <div id="loading-overlay">
-    <div class="loading-logo">Abu Naseeb <span>·</span> 3D Viewer</div>
-    <div class="loading-bar-track"><div class="loading-bar-fill" id="load-bar"></div></div>
-    <div class="loading-text" id="load-text">Initialising scene…</div>
+<div id="loading-overlay">
+  <div class="loading-logo">Abu Naseeb <span>·</span> 3D Viewer</div>
+  <div class="loading-bar-track"><div class="loading-bar-fill" id="load-bar"></div></div>
+  <div class="loading-text" id="load-text">Initialising scene…</div>
+</div>
+
+<div id="header">
+  <button class="back-btn" onclick="window.location.href='index.html'">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    Back to Map
+  </button>
+  <div class="header-center">Abu Naseeb <span>·</span> Al-Baghdaddiya Family House</div>
+  <div class="point-count">☁ <em>3,907,305</em> pts</div>
+</div>
+
+<div id="canvas-container"></div>
+
+<!-- Layer panel - drone ON by default, pc and bim OFF -->
+<div id="layer-panel">
+  <div class="panel-header">
+    <div class="panel-header-label">Layers</div>
+    <div class="panel-header-title">Toggle Visibility</div>
   </div>
-
-  <div id="header">
-    <button class="back-btn" onclick="window.location.href='index.html'">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-      Back to Map
-    </button>
-    <div class="header-center">Abu Naseeb <span>·</span> Al-Baghdaddiya Family House</div>
-    <div class="point-count">☁ <em>3,907,305</em> pts</div>
-  </div>
-
-  <div id="canvas-container"></div>
-
-  <div id="layer-panel">
-    <div class="panel-header">
-      <div class="panel-header-label">Layers</div>
-      <div class="panel-header-title">Toggle Visibility</div>
+  <div class="layer-item" onclick="toggleLayer('pc')">
+    <div class="layer-left">
+      <div class="layer-dot dot-pc"></div>
+      <div><div class="layer-name">Point Cloud</div><div class="layer-sub">E57 · Laser Scan</div></div>
     </div>
-    <div class="layer-item" onclick="toggleLayer('pc')">
-      <div class="layer-left">
-        <div class="layer-dot dot-pc"></div>
-        <div><div class="layer-name">Point Cloud</div><div class="layer-sub">E57 · Laser Scan</div></div>
-      </div>
-      <div class="toggle on" id="toggle-pc"></div>
-    </div>
-    <div class="layer-item" onclick="toggleLayer('bim')">
-      <div class="layer-left">
-        <div class="layer-dot dot-bim"></div>
-        <div><div class="layer-name">BIM Model</div><div class="layer-sub">Revit · GLTF</div></div>
-      </div>
-      <div class="toggle on" id="toggle-bim"></div>
-    </div>
-    <div class="layer-item" onclick="toggleLayer('img')">
-      <div class="layer-left">
-        <div class="layer-dot dot-img"></div>
-        <div><div class="layer-name">Drone Image</div><div class="layer-sub">DJI · Site Photo</div></div>
-      </div>
-      <div class="toggle on" id="toggle-img"></div>
-    </div>
+    <div class="toggle" id="toggle-pc"></div>
   </div>
-
-  <div id="stats-bar">
-    <div class="stat-pill">Lat <em>21.4825°N</em></div>
-    <div class="stat-pill">Lng <em>39.2072°E</em></div>
-    <div class="stat-pill">Alt <em>~245m</em></div>
+  <div class="layer-item" onclick="toggleLayer('bim')">
+    <div class="layer-left">
+      <div class="layer-dot dot-bim"></div>
+      <div><div class="layer-name">BIM Model</div><div class="layer-sub">Revit · GLTF</div></div>
+    </div>
+    <div class="toggle" id="toggle-bim"></div>
   </div>
-
-  <div id="hint">Left drag · Rotate<br>Right drag · Pan<br>Scroll · Zoom</div>
-
-  <div id="img-modal">
-    <button class="modal-close" onclick="closeModal()">✕</button>
-    <img src="drone.JPG" alt="Drone site image" />
-    <div class="modal-label">DJI Drone · Abu Naseeb Al-Baghdaddiya Family House · Makkah</div>
+  <div class="layer-item" onclick="toggleLayer('img')">
+    <div class="layer-left">
+      <div class="layer-dot dot-img"></div>
+      <div><div class="layer-name">Drone Image</div><div class="layer-sub">DJI · Site Photo</div></div>
+    </div>
+    <div class="toggle on" id="toggle-img"></div>
   </div>
+</div>
 
-  <script>
-    // ── State ──
-    const layerState = { pc:true, bim:true, img:true };
-    let pcPoints = null, bimMesh = null, dronePlane = null;
+<!-- Nav cube -->
+<div id="nav-cube">
+  <canvas id="nav-canvas" width="90" height="90"></canvas>
+</div>
 
-    const loadBar  = document.getElementById('load-bar');
-    const loadText = document.getElementById('load-text');
+<!-- View preset buttons -->
+<div id="view-btns">
+  <div class="view-btn" onclick="setView('top')">⊙ Top</div>
+  <div class="view-btn" onclick="setView('front')">◧ Front</div>
+  <div class="view-btn" onclick="setView('iso')">⬡ Iso</div>
+  <div class="view-btn" onclick="resetView()">⟳ Reset</div>
+</div>
 
-    function setProgress(pct, text) {
-      loadBar.style.width = pct + '%';
-      if (text) loadText.textContent = text;
-    }
+<div id="stats-bar">
+  <div class="stat-pill">Lat <em>21.4738°N</em></div>
+  <div class="stat-pill">Lng <em>39.1908°E</em></div>
+  <div class="stat-pill">Alt <em>~245m</em></div>
+</div>
 
-    // ── Three.js Scene ──
-    const container = document.getElementById('canvas-container');
+<div id="hint">
+  Left drag · Rotate<br>
+  Right drag · Pan<br>
+  Scroll · Zoom
+</div>
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setClearColor(0x0d0d14, 1);
-    container.appendChild(renderer.domElement);
+<div id="img-modal">
+  <button class="modal-close" onclick="closeModal()">✕</button>
+  <img src="drone.JPG" alt="Drone site image" onerror="this.src='drone.jpg'" />
+  <div class="modal-label">DJI Drone · Abu Naseeb Al-Baghdaddiya Family House · Makkah</div>
+</div>
 
-    const scene  = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.01, 5000);
-    camera.up.set(0, 0, 1);
-    camera.position.set(80, -120, 60);
+<script>
+  // ── All 360 bin files ──
+  const ALL_BINS = [
+    "data/r/00006/r00006.bin","data/r/00024/r00024.bin","data/r/00026/r00026.bin",
+    "data/r/00042/r00042.bin","data/r/00046/r00046.bin","data/r/00060/r00060.bin",
+    "data/r/00062/r00062.bin","data/r/00064/r00064.bin","data/r/00066/r00066.bin",
+    "data/r/00204/r00204.bin","data/r/00206/r00206.bin","data/r/00224/r00224.bin",
+    "data/r/00226/r00226.bin","data/r/00240/r00240.bin","data/r/00242/r00242.bin",
+    "data/r/00244/r00244.bin","data/r/00246/r00246.bin","data/r/00260/r00260.bin",
+    "data/r/00262/r00262.bin","data/r/00264/r00264.bin","data/r/00266/r00266.bin",
+    "data/r/00402/r00402.bin","data/r/00406/r00406.bin","data/r/00420/r00420.bin",
+    "data/r/00422/r00422.bin","data/r/00424/r00424.bin","data/r/00426/r00426.bin",
+    "data/r/00442/r00442.bin","data/r/00446/r00446.bin","data/r/00460/r00460.bin",
+    "data/r/00462/r00462.bin","data/r/00464/r00464.bin","data/r/00466/r00466.bin",
+    "data/r/00600/r00600.bin","data/r/00602/r00602.bin","data/r/00604/r00604.bin",
+    "data/r/00606/r00606.bin","data/r/00607/r00607.bin","data/r/00620/r00620.bin",
+    "data/r/00622/r00622.bin","data/r/00624/r00624.bin","data/r/00625/r00625.bin",
+    "data/r/00626/r00626.bin","data/r/00627/r00627.bin","data/r/00640/r00640.bin",
+    "data/r/00641/r00641.bin","data/r/00642/r00642.bin","data/r/00643/r00643.bin",
+    "data/r/00644/r00644.bin","data/r/00645/r00645.bin","data/r/00646/r00646.bin",
+    "data/r/00647/r00647.bin","data/r/00656/r00656.bin","data/r/00660/r00660.bin",
+    "data/r/00661/r00661.bin","data/r/00662/r00662.bin","data/r/00663/r00663.bin",
+    "data/r/00664/r00664.bin","data/r/00665/r00665.bin","data/r/00666/r00666.bin",
+    "data/r/00674/r00674.bin","data/r/02004/r02004.bin","data/r/02006/r02006.bin",
+    "data/r/02024/r02024.bin","data/r/02026/r02026.bin","data/r/02040/r02040.bin",
+    "data/r/02042/r02042.bin","data/r/02044/r02044.bin","data/r/02046/r02046.bin",
+    "data/r/02060/r02060.bin","data/r/02062/r02062.bin","data/r/02064/r02064.bin",
+    "data/r/02066/r02066.bin","data/r/02204/r02204.bin","data/r/02206/r02206.bin",
+    "data/r/02240/r02240.bin","data/r/02242/r02242.bin","data/r/02244/r02244.bin",
+    "data/r/02246/r02246.bin","data/r/02260/r02260.bin","data/r/02264/r02264.bin",
+    "data/r/02400/r02400.bin","data/r/02402/r02402.bin","data/r/02404/r02404.bin",
+    "data/r/02405/r02405.bin","data/r/02406/r02406.bin","data/r/02407/r02407.bin",
+    "data/r/02420/r02420.bin","data/r/02422/r02422.bin","data/r/02424/r02424.bin",
+    "data/r/02425/r02425.bin","data/r/02426/r02426.bin","data/r/02440/r02440.bin",
+    "data/r/02441/r02441.bin","data/r/02442/r02442.bin","data/r/02443/r02443.bin",
+    "data/r/02444/r02444.bin","data/r/02445/r02445.bin","data/r/02446/r02446.bin",
+    "data/r/02447/r02447.bin","data/r/02460/r02460.bin","data/r/02461/r02461.bin",
+    "data/r/02462/r02462.bin","data/r/02464/r02464.bin","data/r/02465/r02465.bin",
+    "data/r/02466/r02466.bin","data/r/02600/r02600.bin","data/r/02602/r02602.bin",
+    "data/r/02604/r02604.bin","data/r/02606/r02606.bin","data/r/02620/r02620.bin",
+    "data/r/02624/r02624.bin","data/r/02640/r02640.bin","data/r/02642/r02642.bin",
+    "data/r/02644/r02644.bin","data/r/02646/r02646.bin","data/r/02660/r02660.bin",
+    "data/r/02664/r02664.bin","data/r/04002/r04002.bin","data/r/04006/r04006.bin",
+    "data/r/04020/r04020.bin","data/r/04022/r04022.bin","data/r/04024/r04024.bin",
+    "data/r/04026/r04026.bin","data/r/04042/r04042.bin","data/r/04046/r04046.bin",
+    "data/r/04060/r04060.bin","data/r/04062/r04062.bin","data/r/04064/r04064.bin",
+    "data/r/04066/r04066.bin","data/r/04200/r04200.bin","data/r/04201/r04201.bin",
+    "data/r/04202/r04202.bin","data/r/04203/r04203.bin","data/r/04204/r04204.bin",
+    "data/r/04205/r04205.bin","data/r/04206/r04206.bin","data/r/04207/r04207.bin",
+    "data/r/04212/r04212.bin","data/r/04220/r04220.bin","data/r/04221/r04221.bin",
+    "data/r/04222/r04222.bin","data/r/04223/r04223.bin","data/r/04224/r04224.bin",
+    "data/r/04225/r04225.bin","data/r/04226/r04226.bin","data/r/04227/r04227.bin",
+    "data/r/04230/r04230.bin","data/r/04232/r04232.bin","data/r/04234/r04234.bin",
+    "data/r/04236/r04236.bin","data/r/04240/r04240.bin","data/r/04241/r04241.bin",
+    "data/r/04242/r04242.bin","data/r/04243/r04243.bin","data/r/04244/r04244.bin",
+    "data/r/04245/r04245.bin","data/r/04246/r04246.bin","data/r/04247/r04247.bin",
+    "data/r/04252/r04252.bin","data/r/04261/r04261.bin","data/r/04263/r04263.bin",
+    "data/r/04264/r04264.bin","data/r/04265/r04265.bin","data/r/04266/r04266.bin",
+    "data/r/04267/r04267.bin","data/r/04270/r04270.bin","data/r/04272/r04272.bin",
+    "data/r/04276/r04276.bin","data/r/04402/r04402.bin","data/r/04406/r04406.bin",
+    "data/r/04420/r04420.bin","data/r/04422/r04422.bin","data/r/04424/r04424.bin",
+    "data/r/04426/r04426.bin","data/r/04442/r04442.bin","data/r/04460/r04460.bin",
+    "data/r/04462/r04462.bin","data/r/04600/r04600.bin","data/r/04602/r04602.bin",
+    "data/r/04604/r04604.bin","data/r/04606/r04606.bin","data/r/04620/r04620.bin",
+    "data/r/04622/r04622.bin","data/r/04624/r04624.bin","data/r/04626/r04626.bin",
+    "data/r/04640/r04640.bin","data/r/04642/r04642.bin","data/r/04660/r04660.bin",
+    "data/r/04662/r04662.bin","data/r/06000/r06000.bin","data/r/06001/r06001.bin",
+    "data/r/06002/r06002.bin","data/r/06003/r06003.bin","data/r/06004/r06004.bin",
+    "data/r/06005/r06005.bin","data/r/06006/r06006.bin","data/r/06007/r06007.bin",
+    "data/r/06010/r06010.bin","data/r/06012/r06012.bin","data/r/06014/r06014.bin",
+    "data/r/06016/r06016.bin","data/r/06017/r06017.bin","data/r/06020/r06020.bin",
+    "data/r/06021/r06021.bin","data/r/06022/r06022.bin","data/r/06024/r06024.bin",
+    "data/r/06025/r06025.bin","data/r/06026/r06026.bin","data/r/06027/r06027.bin",
+    "data/r/06030/r06030.bin","data/r/06034/r06034.bin","data/r/06036/r06036.bin",
+    "data/r/06041/r06041.bin","data/r/06042/r06042.bin","data/r/06043/r06043.bin",
+    "data/r/06044/r06044.bin","data/r/06045/r06045.bin","data/r/06046/r06046.bin",
+    "data/r/06047/r06047.bin","data/r/06050/r06050.bin","data/r/06052/r06052.bin",
+    "data/r/06053/r06053.bin","data/r/06054/r06054.bin","data/r/06056/r06056.bin",
+    "data/r/06060/r06060.bin","data/r/06062/r06062.bin","data/r/06064/r06064.bin",
+    "data/r/06066/r06066.bin","data/r/06200/r06200.bin","data/r/06202/r06202.bin",
+    "data/r/06204/r06204.bin","data/r/06206/r06206.bin","data/r/06220/r06220.bin",
+    "data/r/06224/r06224.bin","data/r/06240/r06240.bin","data/r/06242/r06242.bin",
+    "data/r/06244/r06244.bin","data/r/06246/r06246.bin","data/r/06260/r06260.bin",
+    "data/r/06264/r06264.bin","data/r/06266/r06266.bin","data/r/06400/r06400.bin",
+    "data/r/06402/r06402.bin","data/r/06404/r06404.bin","data/r/06406/r06406.bin",
+    "data/r/06420/r06420.bin","data/r/06422/r06422.bin","data/r/06424/r06424.bin",
+    "data/r/06426/r06426.bin","data/r/06440/r06440.bin","data/r/06442/r06442.bin",
+    "data/r/06460/r06460.bin","data/r/06462/r06462.bin","data/r/06600/r06600.bin",
+    "data/r/06602/r06602.bin","data/r/06604/r06604.bin","data/r/06606/r06606.bin",
+    "data/r/06620/r06620.bin","data/r/06622/r06622.bin","data/r/06624/r06624.bin",
+    "data/r/06626/r06626.bin","data/r/06640/r06640.bin","data/r/06642/r06642.bin",
+    "data/r/06660/r06660.bin","data/r/06662/r06662.bin",
+    "data/r/r.bin","data/r/r0.bin","data/r/r00.bin","data/r/r000.bin",
+    "data/r/r0000.bin","data/r/r0002.bin","data/r/r0004.bin","data/r/r0006.bin",
+    "data/r/r002.bin","data/r/r0020.bin","data/r/r0022.bin","data/r/r0024.bin",
+    "data/r/r0026.bin","data/r/r004.bin","data/r/r0040.bin","data/r/r0042.bin",
+    "data/r/r0044.bin","data/r/r0046.bin","data/r/r006.bin","data/r/r0060.bin",
+    "data/r/r0062.bin","data/r/r0064.bin","data/r/r0065.bin","data/r/r0066.bin",
+    "data/r/r0067.bin","data/r/r02.bin","data/r/r020.bin","data/r/r0200.bin",
+    "data/r/r0202.bin","data/r/r0204.bin","data/r/r0206.bin","data/r/r022.bin",
+    "data/r/r0220.bin","data/r/r0224.bin","data/r/r0226.bin","data/r/r024.bin",
+    "data/r/r0240.bin","data/r/r0242.bin","data/r/r0244.bin","data/r/r0246.bin",
+    "data/r/r026.bin","data/r/r0260.bin","data/r/r0262.bin","data/r/r0264.bin",
+    "data/r/r0266.bin","data/r/r04.bin","data/r/r040.bin","data/r/r0400.bin",
+    "data/r/r0402.bin","data/r/r0404.bin","data/r/r0406.bin","data/r/r042.bin",
+    "data/r/r0420.bin","data/r/r0421.bin","data/r/r0422.bin","data/r/r0423.bin",
+    "data/r/r0424.bin","data/r/r0425.bin","data/r/r0426.bin","data/r/r0427.bin",
+    "data/r/r044.bin","data/r/r0440.bin","data/r/r0442.bin","data/r/r0444.bin",
+    "data/r/r0446.bin","data/r/r046.bin","data/r/r0460.bin","data/r/r0462.bin",
+    "data/r/r0464.bin","data/r/r0466.bin","data/r/r06.bin","data/r/r060.bin",
+    "data/r/r0600.bin","data/r/r0601.bin","data/r/r0602.bin","data/r/r0603.bin",
+    "data/r/r0604.bin","data/r/r0605.bin","data/r/r0606.bin","data/r/r062.bin",
+    "data/r/r0620.bin","data/r/r0622.bin","data/r/r0624.bin","data/r/r0626.bin",
+    "data/r/r064.bin","data/r/r0640.bin","data/r/r0642.bin","data/r/r0644.bin",
+    "data/r/r0646.bin","data/r/r066.bin","data/r/r0660.bin","data/r/r0662.bin",
+    "data/r/r0664.bin","data/r/r0666.bin",
+  ];
 
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping  = true;
-    controls.dampingFactor  = 0.15;
-    controls.rotateSpeed    = 0.4;
-    controls.zoomSpeed      = 0.6;
-    controls.panSpeed       = 0.4;
-    controls.minDistance    = 0.5;
-    controls.maxDistance    = 800;
+  // ── State: drone ON, others OFF by default ──
+  const layerState = { pc: false, bim: false, img: true };
+  let pcPoints = null, bimMesh = null, dronePlane = null;
+  let sceneCenter = new THREE.Vector3();
+  let sceneSize   = new THREE.Vector3();
+  let sceneBox    = null;
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-    const sun = new THREE.DirectionalLight(0xfff8e7, 1.1);
-    sun.position.set(60, 80, 100);
-    scene.add(sun);
+  const loadBar  = document.getElementById('load-bar');
+  const loadText = document.getElementById('load-text');
+  function setProgress(pct, text) {
+    loadBar.style.width = pct + '%';
+    if (text) loadText.textContent = text;
+  }
 
-    window.addEventListener('resize', () => {
-      const w = container.clientWidth, h = container.clientHeight;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
-    });
+  // ── Scene ──
+  const container = document.getElementById('canvas-container');
+  const renderer  = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(container.clientWidth, container.clientHeight);
+  renderer.setClearColor(0x0d0d14, 1);
+  container.appendChild(renderer.domElement);
 
-    (function animate() {
-      requestAnimationFrame(animate);
-      controls.update();
-      renderer.render(scene, camera);
-    })();
+  const scene  = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(55, container.clientWidth / container.clientHeight, 0.01, 5000);
+  camera.up.set(0, 0, 1);
 
-    // ── Potree 1.7 binary parser ──
-    // stride=17: 12 pos(int32x3) + 4 color(uint8 RGBA) + 1 class
-    // stride=20: 12 pos(int32x3) + 6 color(uint16 RGB) + 2 pad
-    function parseBin(buffer, scale, offX, offY, offZ, posArr, colArr) {
-      const view = new DataView(buffer);
-      const len  = buffer.byteLength;
-      const STRIDE = (len % 20 === 0 && len % 17 !== 0) ? 20 : 17;
-      const n = Math.floor(len / STRIDE);
-      for (let i = 0; i < n; i++) {
-        const o = i * STRIDE;
-        posArr.push(
-          view.getInt32(o,     true) * scale - offX,
-          view.getInt32(o + 4, true) * scale - offY,
-          view.getInt32(o + 8, true) * scale - offZ
-        );
-        if (STRIDE === 20) {
-          colArr.push(
-            view.getUint16(o + 12, true) / 65535,
-            view.getUint16(o + 14, true) / 65535,
-            view.getUint16(o + 16, true) / 65535
-          );
-        } else {
-          colArr.push(
-            view.getUint8(o + 12) / 255,
-            view.getUint8(o + 13) / 255,
-            view.getUint8(o + 14) / 255
-          );
-        }
-      }
-    }
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.12;
+  controls.rotateSpeed   = 0.35;
+  controls.zoomSpeed     = 0.5;
+  controls.panSpeed      = 0.35;
+  controls.minDistance   = 0.5;
+  controls.maxDistance   = 1000;
 
-    // ── Load point cloud ──
-    async function loadPointCloud() {
-      setProgress(5, 'Reading metadata…');
+  scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+  const sun = new THREE.DirectionalLight(0xfff8e7, 1.0);
+  sun.position.set(60, 80, 100);
+  scene.add(sun);
 
-      const meta = await fetch('./pointcloud/cloud.js').then(r => r.json());
-      const scale = meta.scale;
-      const bb    = meta.tightBoundingBox;
-      const offX  = (bb.lx + bb.ux) / 2;
-      const offY  = (bb.ly + bb.uy) / 2;
-      const offZ  = (bb.lz + bb.uz) / 2;
+  window.addEventListener('resize', () => {
+    const w = container.clientWidth, h = container.clientHeight;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+  });
 
-      // All bin files discovered from the zip listing
-      const bins = [
-        'data/r/r0000.bin','data/r/r0002.bin','data/r/r0004.bin','data/r/r0006.bin',
-        'data/r/r0020.bin','data/r/r0022.bin','data/r/r0024.bin','data/r/r0026.bin',
-        'data/r/r0040.bin','data/r/r0042.bin','data/r/r0044.bin','data/r/r0046.bin',
-        'data/r/r0060.bin',
-        'data/r/00006/r00006.bin','data/r/00024/r00024.bin','data/r/00026/r00026.bin',
-        'data/r/00042/r00042.bin','data/r/00046/r00046.bin',
-        'data/r/00060/r00060.bin','data/r/00062/r00062.bin',
-        'data/r/00064/r00064.bin','data/r/00066/r00066.bin',
-        'data/r/00204/r00204.bin','data/r/00206/r00206.bin',
-        'data/r/00224/r00224.bin','data/r/00226/r00226.bin',
-        'data/r/00240/r00240.bin','data/r/00242/r00242.bin',
-        'data/r/00244/r00244.bin','data/r/00246/r00246.bin',
-        'data/r/00260/r00260.bin','data/r/00262/r00262.bin',
-        'data/r/00264/r00264.bin','data/r/00266/r00266.bin',
-        'data/r/00402/r00402.bin','data/r/00406/r00406.bin',
-        'data/r/00420/r00420.bin','data/r/00422/r00422.bin',
-        'data/r/00424/r00424.bin','data/r/00426/r00426.bin',
-        'data/r/00442/r00442.bin','data/r/00446/r00446.bin',
-        'data/r/00460/r00460.bin','data/r/00462/r00462.bin',
-        'data/r/00464/r00464.bin','data/r/00466/r00466.bin',
-        'data/r/00600/r00600.bin',
-      ];
+  // ── Nav cube ──
+  const navCanvas   = document.getElementById('nav-canvas');
+  const navRenderer = new THREE.WebGLRenderer({ canvas: navCanvas, antialias: true, alpha: true });
+  navRenderer.setPixelRatio(window.devicePixelRatio);
+  navRenderer.setSize(90, 90);
+  navRenderer.setClearColor(0x000000, 0);
 
-      setProgress(10, 'Fetching point data…');
+  const navScene  = new THREE.Scene();
+  const navCamera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+  navCamera.position.set(2.5, 2.5, 2.5);
+  navCamera.lookAt(0, 0, 0);
 
-      const posArr = [], colArr = [];
-      for (let i = 0; i < bins.length; i++) {
-        try {
-          const buf = await fetch('./pointcloud/' + bins[i]).then(r => r.arrayBuffer());
-          parseBin(buf, scale, offX, offY, offZ, posArr, colArr);
-        } catch(e) { /* skip */ }
-        setProgress(10 + Math.round((i / bins.length) * 65), `Loading bins… ${i+1}/${bins.length}`);
-      }
+  // Cube faces
+  const faceColors = [0xC9A84C,0xA8734A,0x7EC8E3,0x5A9EB8,0xA8D8A8,0x5A8A5A];
+  const cubeGeo = new THREE.BoxGeometry(1.4, 1.4, 1.4);
+  const cubeMats = faceColors.map(c => new THREE.MeshPhongMaterial({ color: c, transparent: true, opacity: 0.85 }));
+  const navCube = new THREE.Mesh(cubeGeo, cubeMats);
+  navScene.add(navCube);
+  navScene.add(new THREE.AmbientLight(0xffffff, 0.6));
+  const navLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  navLight.position.set(3, 4, 3);
+  navScene.add(navLight);
 
-      setProgress(76, 'Building geometry…');
+  // Face labels on cube
+  const labels = ['R','L','T','B','F','K'];
+  labels.forEach((lbl, i) => {
+    const c2 = document.createElement('canvas');
+    c2.width = 64; c2.height = 64;
+    const ctx = c2.getContext('2d');
+    ctx.fillStyle = 'rgba(0,0,0,0)';
+    ctx.fillRect(0,0,64,64);
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(lbl, 32, 32);
+    cubeMats[i].map = new THREE.CanvasTexture(c2);
+    cubeMats[i].needsUpdate = true;
+  });
 
-      const geo = new THREE.BufferGeometry();
-      geo.setAttribute('position', new THREE.Float32BufferAttribute(posArr, 3));
-      geo.setAttribute('color',    new THREE.Float32BufferAttribute(colArr, 3));
+  // ── Animate ──
+  (function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
+    // Sync nav cube rotation with main camera
+    navCube.quaternion.copy(camera.quaternion).invert();
+    navRenderer.render(navScene, navCamera);
+  })();
 
-      const mat = new THREE.PointsMaterial({
-        size: 0.25, vertexColors: true, sizeAttenuation: true,
-      });
-
-      pcPoints = new THREE.Points(geo, mat);
-      scene.add(pcPoints);
-
-      geo.computeBoundingBox();
-      const box    = geo.boundingBox;
-      const center = new THREE.Vector3();
-      const size   = new THREE.Vector3();
-      box.getCenter(center);
-      box.getSize(size);
-
-      const maxDim = Math.max(size.x, size.y, size.z);
-      controls.target.copy(center);
-      camera.position.set(
-        center.x + maxDim * 0.9,
-        center.y - maxDim * 1.1,
-        center.z + maxDim * 0.65
+  // ── Bin parser — stride=17, 8-bit RGB ──
+  function parseBin(buffer, scale, offX, offY, offZ, posArr, colArr) {
+    const view = new DataView(buffer);
+    const STRIDE = 17;
+    const n = Math.floor(buffer.byteLength / STRIDE);
+    for (let i = 0; i < n; i++) {
+      const o = i * STRIDE;
+      posArr.push(
+        view.getInt32(o,     true) * scale - offX,
+        view.getInt32(o + 4, true) * scale - offY,
+        view.getInt32(o + 8, true) * scale - offZ
       );
-      controls.update();
-
-      return { center, size, box };
+      colArr.push(
+        view.getUint8(o + 12) / 255,
+        view.getUint8(o + 13) / 255,
+        view.getUint8(o + 14) / 255
+      );
     }
+  }
 
-    // ── Load BIM ──
-    function loadBIM(pcInfo) {
-      return new Promise(resolve => {
-        new THREE.GLTFLoader().load('./bim_model.glb', gltf => {
-          bimMesh = gltf.scene;
+  // ── Load point cloud ──
+  async function loadPointCloud() {
+    setProgress(5, 'Reading metadata…');
+    const meta  = await fetch('./pointcloud/cloud.js').then(r => r.json());
+    const scale = meta.scale;
+    const bb    = meta.tightBoundingBox;
+    const offX  = (bb.lx + bb.ux) / 2;
+    const offY  = (bb.ly + bb.uy) / 2;
+    const offZ  = (bb.lz + bb.uz) / 2;
 
-          const bimBB   = new THREE.Box3().setFromObject(bimMesh);
-          const bimSize = new THREE.Vector3();
-          bimBB.getSize(bimSize);
-
-          const s = Math.min(
-            (pcInfo.size.x * 0.9) / bimSize.x,
-            (pcInfo.size.y * 0.9) / bimSize.y
-          );
-          bimMesh.scale.setScalar(s);
-
-          const sb = new THREE.Box3().setFromObject(bimMesh);
-          const sc = new THREE.Vector3();
-          sb.getCenter(sc);
-
-          bimMesh.position.set(
-            pcInfo.center.x - sc.x,
-            pcInfo.center.y - sc.y,
-            pcInfo.box.min.z - sb.min.z
-          );
-
-          bimMesh.traverse(child => {
-            if (child.isMesh) {
-              child.material = new THREE.MeshPhongMaterial({
-                color: 0xa8d8a8, transparent: true, opacity: 0.5,
-                side: THREE.DoubleSide, depthWrite: false,
-              });
-            }
-          });
-
-          // Revit exports with Y-up; Three.js uses Y-up too but
-          // Revit's forward axis is often rotated 90° — correct it
-          bimMesh.rotation.z = Math.PI / 2;
-
-          // Recompute position after rotation
-          const rb = new THREE.Box3().setFromObject(bimMesh);
-          const rc = new THREE.Vector3();
-          rb.getCenter(rc);
-          bimMesh.position.set(
-            pcInfo.center.x - rc.x + bimMesh.position.x,
-            pcInfo.center.y - rc.y + bimMesh.position.y,
-            pcInfo.box.min.z - rb.min.z + bimMesh.position.z
-          );
-
-          scene.add(bimMesh);
-          resolve();
-        }, undefined, () => resolve());
-      });
-    }
-
-    // ── Drone image plane ──
-    function loadDronePlane(pcInfo) {
-      // Try both cases for the filename
-      const tryLoad = (path, fallback) => {
-        new THREE.TextureLoader().load(path, tex => {
-          const geo = new THREE.PlaneGeometry(pcInfo.size.x * 1.5, pcInfo.size.y * 1.5);
-          const mat = new THREE.MeshBasicMaterial({
-            map: tex, transparent: true, opacity: 0.72,
-            side: THREE.DoubleSide, depthWrite: false,
-          });
-          dronePlane = new THREE.Mesh(geo, mat);
-          dronePlane.position.set(pcInfo.center.x, pcInfo.center.y, pcInfo.box.max.z + 15);
-          scene.add(dronePlane);
-        }, undefined, () => { if (fallback) tryLoad(fallback, null); });
-      };
-      tryLoad('./drone.jpg', './drone.JPG');
-    }
-
-    // ── Toggles ──
-    function toggleLayer(id) {
-      layerState[id] = !layerState[id];
-      document.getElementById('toggle-' + id).classList.toggle('on', layerState[id]);
-      if (id === 'pc'  && pcPoints)   pcPoints.visible   = layerState.pc;
-      if (id === 'bim' && bimMesh)    bimMesh.visible    = layerState.bim;
-      if (id === 'img') {
-        if (dronePlane) dronePlane.visible = layerState.img;
-        document.getElementById('img-modal').classList.toggle('show', layerState.img);
-      }
-    }
-
-    function closeModal() {
-      document.getElementById('img-modal').classList.remove('show');
-      layerState.img = false;
-      document.getElementById('toggle-img').classList.remove('on');
-      if (dronePlane) dronePlane.visible = false;
-    }
-
-    document.getElementById('img-modal').addEventListener('click', e => {
-      if (e.target === document.getElementById('img-modal')) closeModal();
-    });
-
-    // ── Boot ──
-    (async () => {
+    const posArr = [], colArr = [];
+    for (let i = 0; i < ALL_BINS.length; i++) {
       try {
-        const pcInfo = await loadPointCloud();
-        setProgress(82, 'Loading BIM model…');
-        await loadBIM(pcInfo);
-        setProgress(95, 'Loading drone image…');
-        loadDronePlane(pcInfo);
-        setProgress(100, 'Ready');
-        setTimeout(() => document.getElementById('loading-overlay').classList.add('hidden'), 500);
-      } catch(err) {
-        loadText.textContent = 'Error: ' + err.message;
-        console.error(err);
-      }
-    })();
-  </script>
+        const buf = await fetch('./pointcloud/' + ALL_BINS[i]).then(r => r.arrayBuffer());
+        parseBin(buf, scale, offX, offY, offZ, posArr, colArr);
+      } catch(e) { /* skip missing */ }
+      setProgress(5 + Math.round((i / ALL_BINS.length) * 70), `Loading points… ${i+1}/${ALL_BINS.length}`);
+    }
+
+    setProgress(76, 'Building geometry…');
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(posArr, 3));
+    geo.setAttribute('color',    new THREE.Float32BufferAttribute(colArr, 3));
+
+    const mat = new THREE.PointsMaterial({ size: 0.22, vertexColors: true, sizeAttenuation: true });
+    pcPoints = new THREE.Points(geo, mat);
+    pcPoints.visible = layerState.pc;
+    scene.add(pcPoints);
+
+    geo.computeBoundingBox();
+    const box = geo.boundingBox;
+    box.getCenter(sceneCenter);
+    box.getSize(sceneSize);
+    sceneBox = box;
+
+    fitCamera();
+    return { center: sceneCenter, size: sceneSize, box };
+  }
+
+  // ── Fit camera to scene ──
+  function fitCamera() {
+    const maxDim = Math.max(sceneSize.x, sceneSize.y, sceneSize.z);
+    controls.target.copy(sceneCenter);
+    camera.position.set(
+      sceneCenter.x + maxDim * 0.9,
+      sceneCenter.y - maxDim * 1.0,
+      sceneCenter.z + maxDim * 0.7
+    );
+    controls.update();
+  }
+
+  // ── View presets ──
+  function setView(v) {
+    const d = Math.max(sceneSize.x, sceneSize.y, sceneSize.z) * 1.2;
+    controls.target.copy(sceneCenter);
+    if (v === 'top')   camera.position.set(sceneCenter.x, sceneCenter.y, sceneCenter.z + d * 1.5);
+    if (v === 'front') camera.position.set(sceneCenter.x, sceneCenter.y - d * 1.5, sceneCenter.z + sceneSize.z * 0.3);
+    if (v === 'iso')   camera.position.set(sceneCenter.x + d, sceneCenter.y - d, sceneCenter.z + d * 0.7);
+    controls.update();
+  }
+  function resetView() { fitCamera(); }
+
+  // ── Load BIM ──
+  function loadBIM(pcInfo) {
+    return new Promise(resolve => {
+      new THREE.GLTFLoader().load('./bim_model.glb', gltf => {
+        bimMesh = gltf.scene;
+
+        // Compute raw BIM bounds
+        const rawBB   = new THREE.Box3().setFromObject(bimMesh);
+        const rawSize = new THREE.Vector3();
+        rawBB.getSize(rawSize);
+
+        // Scale to match point cloud footprint
+        const s = Math.min(
+          (pcInfo.size.x * 0.88) / rawSize.x,
+          (pcInfo.size.y * 0.88) / rawSize.y,
+          (pcInfo.size.z * 1.2)  / rawSize.z
+        );
+        bimMesh.scale.setScalar(s);
+
+        // After scale, recompute and centre on point cloud
+        const scaledBB  = new THREE.Box3().setFromObject(bimMesh);
+        const scaledCtr = new THREE.Vector3();
+        scaledBB.getCenter(scaledCtr);
+
+        bimMesh.position.set(
+          pcInfo.center.x - scaledCtr.x,
+          pcInfo.center.y - scaledCtr.y,
+          pcInfo.box.min.z - scaledBB.min.z
+        );
+
+        // Semi-transparent green overlay
+        bimMesh.traverse(child => {
+          if (child.isMesh) {
+            child.material = new THREE.MeshPhongMaterial({
+              color: 0xa8d8a8, transparent: true, opacity: 0.45,
+              side: THREE.DoubleSide, depthWrite: false,
+            });
+          }
+        });
+
+        bimMesh.visible = layerState.bim;
+        scene.add(bimMesh);
+        resolve();
+      }, undefined, () => resolve());
+    });
+  }
+
+  // ── Drone plane ──
+  function loadDronePlane(pcInfo) {
+    const tryLoad = (src, fallback) => {
+      new THREE.TextureLoader().load(src, tex => {
+        const geo = new THREE.PlaneGeometry(pcInfo.size.x * 1.6, pcInfo.size.y * 1.6);
+        const mat = new THREE.MeshBasicMaterial({
+          map: tex, transparent: true, opacity: 0.78,
+          side: THREE.DoubleSide, depthWrite: false,
+        });
+        dronePlane = new THREE.Mesh(geo, mat);
+        dronePlane.position.set(pcInfo.center.x, pcInfo.center.y, pcInfo.box.max.z + 18);
+        dronePlane.visible = layerState.img;
+        scene.add(dronePlane);
+      }, undefined, () => { if (fallback) tryLoad(fallback, null); });
+    };
+    tryLoad('./drone.JPG', './drone.jpg');
+  }
+
+  // ── Toggles ──
+  function toggleLayer(id) {
+    layerState[id] = !layerState[id];
+    document.getElementById('toggle-' + id).classList.toggle('on', layerState[id]);
+    if (id === 'pc'  && pcPoints)   pcPoints.visible   = layerState.pc;
+    if (id === 'bim' && bimMesh)    bimMesh.visible    = layerState.bim;
+    if (id === 'img') {
+      if (dronePlane) dronePlane.visible = layerState.img;
+      if (layerState.img) document.getElementById('img-modal').classList.add('show');
+      else                document.getElementById('img-modal').classList.remove('show');
+    }
+  }
+
+  function closeModal() {
+    document.getElementById('img-modal').classList.remove('show');
+    layerState.img = false;
+    document.getElementById('toggle-img').classList.remove('on');
+    if (dronePlane) dronePlane.visible = false;
+  }
+
+  document.getElementById('img-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('img-modal')) closeModal();
+  });
+
+  // ── Boot ──
+  (async () => {
+    try {
+      const pcInfo = await loadPointCloud();
+      setProgress(80, 'Loading BIM model…');
+      await loadBIM(pcInfo);
+      setProgress(94, 'Loading drone image…');
+      loadDronePlane(pcInfo);
+
+      // Show drone modal on load since it's the default layer
+      setTimeout(() => {
+        document.getElementById('img-modal').classList.add('show');
+      }, 800);
+
+      setProgress(100, 'Ready');
+      setTimeout(() => document.getElementById('loading-overlay').classList.add('hidden'), 500);
+    } catch(err) {
+      loadText.textContent = 'Error: ' + err.message;
+      console.error(err);
+    }
+  })();
+</script>
 </body>
 </html>
