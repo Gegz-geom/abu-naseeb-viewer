@@ -66,13 +66,13 @@
 
     /* Nav cube */
     #nav-cube{
-      position:fixed;bottom:80px;right:20px;width:90px;height:90px;z-index:150;
+      position:fixed;bottom:200px;right:20px;width:90px;height:90px;z-index:150;
     }
     #nav-canvas{width:90px;height:90px;border-radius:8px;border:1px solid var(--border);}
 
     /* View buttons */
     #view-btns{
-      position:fixed;bottom:20px;right:20px;
+      position:fixed;bottom:80px;right:20px;
       display:flex;flex-direction:column;gap:6px;z-index:150;
     }
     .view-btn{
@@ -442,9 +442,10 @@
     const meta  = await fetch('./pointcloud/cloud.js').then(r => r.json());
     const scale = meta.scale;
     const bb    = meta.tightBoundingBox;
+    // Centre points around origin for stable rendering
     const offX  = (bb.lx + bb.ux) / 2;
     const offY  = (bb.ly + bb.uy) / 2;
-    const offZ  = (bb.lz + bb.uz) / 2;
+    const offZ  = bb.lz; // use floor as Z origin so building sits on Z=0
 
     const posArr = [], colArr = [];
     for (let i = 0; i < ALL_BINS.length; i++) {
@@ -504,31 +505,36 @@
       new THREE.GLTFLoader().load('./bim_model.glb', gltf => {
         bimMesh = gltf.scene;
 
-        // Compute raw BIM bounds
+        // Revit exports Y-up in feet (scale=0.3048 already in nodes).
+        // Our scene is Z-up (matching Metashape point cloud).
+        // Fix: rotate -90° around X so Y becomes Z (up).
+        bimMesh.rotation.x = -Math.PI / 2;
+        bimMesh.updateMatrixWorld(true);
+
+        // Now measure after rotation
         const rawBB   = new THREE.Box3().setFromObject(bimMesh);
         const rawSize = new THREE.Vector3();
         rawBB.getSize(rawSize);
 
-        // Scale to match point cloud footprint
+        // Scale to fit point cloud footprint
         const s = Math.min(
-          (pcInfo.size.x * 0.88) / rawSize.x,
-          (pcInfo.size.y * 0.88) / rawSize.y,
-          (pcInfo.size.z * 1.2)  / rawSize.z
+          (pcInfo.size.x * 0.85) / rawSize.x,
+          (pcInfo.size.y * 0.85) / rawSize.y
         );
         bimMesh.scale.setScalar(s);
+        bimMesh.updateMatrixWorld(true);
 
-        // After scale, recompute and centre on point cloud
-        const scaledBB  = new THREE.Box3().setFromObject(bimMesh);
-        const scaledCtr = new THREE.Vector3();
-        scaledBB.getCenter(scaledCtr);
+        // Re-measure after scale, then centre on point cloud
+        const finalBB  = new THREE.Box3().setFromObject(bimMesh);
+        const finalCtr = new THREE.Vector3();
+        finalBB.getCenter(finalCtr);
 
         bimMesh.position.set(
-          pcInfo.center.x - scaledCtr.x,
-          pcInfo.center.y - scaledCtr.y,
-          pcInfo.box.min.z - scaledBB.min.z
+          pcInfo.center.x - finalCtr.x,
+          pcInfo.center.y - finalCtr.y,
+          pcInfo.box.min.z - finalBB.min.z
         );
 
-        // Semi-transparent green overlay
         bimMesh.traverse(child => {
           if (child.isMesh) {
             child.material = new THREE.MeshPhongMaterial({
