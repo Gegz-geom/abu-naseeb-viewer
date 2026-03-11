@@ -167,7 +167,7 @@
 
   <div id="img-modal">
     <button class="modal-close" onclick="closeModal()">✕</button>
-    <img src="drone.jpg" alt="Drone site image" />
+    <img src="drone.JPG" alt="Drone site image" />
     <div class="modal-label">DJI Drone · Abu Naseeb Al-Baghdaddiya Family House · Makkah</div>
   </div>
 
@@ -200,7 +200,10 @@
 
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping  = true;
-    controls.dampingFactor  = 0.08;
+    controls.dampingFactor  = 0.15;
+    controls.rotateSpeed    = 0.4;
+    controls.zoomSpeed      = 0.6;
+    controls.panSpeed       = 0.4;
     controls.minDistance    = 0.5;
     controls.maxDistance    = 800;
 
@@ -223,11 +226,13 @@
     })();
 
     // ── Potree 1.7 binary parser ──
-    // Each point = 3×int32 (XYZ) + 4×uint8 (RGBA) + 1×uint8 (class) = 17 bytes
+    // stride=17: 12 pos(int32x3) + 4 color(uint8 RGBA) + 1 class
+    // stride=20: 12 pos(int32x3) + 6 color(uint16 RGB) + 2 pad
     function parseBin(buffer, scale, offX, offY, offZ, posArr, colArr) {
-      const STRIDE = 17;
       const view = new DataView(buffer);
-      const n = Math.floor(buffer.byteLength / STRIDE);
+      const len  = buffer.byteLength;
+      const STRIDE = (len % 20 === 0 && len % 17 !== 0) ? 20 : 17;
+      const n = Math.floor(len / STRIDE);
       for (let i = 0; i < n; i++) {
         const o = i * STRIDE;
         posArr.push(
@@ -235,11 +240,19 @@
           view.getInt32(o + 4, true) * scale - offY,
           view.getInt32(o + 8, true) * scale - offZ
         );
-        colArr.push(
-          view.getUint8(o + 12) / 255,
-          view.getUint8(o + 13) / 255,
-          view.getUint8(o + 14) / 255
-        );
+        if (STRIDE === 20) {
+          colArr.push(
+            view.getUint16(o + 12, true) / 65535,
+            view.getUint16(o + 14, true) / 65535,
+            view.getUint16(o + 16, true) / 65535
+          );
+        } else {
+          colArr.push(
+            view.getUint8(o + 12) / 255,
+            view.getUint8(o + 13) / 255,
+            view.getUint8(o + 14) / 255
+          );
+        }
       }
     }
 
@@ -297,7 +310,7 @@
       geo.setAttribute('color',    new THREE.Float32BufferAttribute(colArr, 3));
 
       const mat = new THREE.PointsMaterial({
-        size: 0.2, vertexColors: true, sizeAttenuation: true,
+        size: 0.25, vertexColors: true, sizeAttenuation: true,
       });
 
       pcPoints = new THREE.Points(geo, mat);
@@ -357,6 +370,20 @@
             }
           });
 
+          // Revit exports with Y-up; Three.js uses Y-up too but
+          // Revit's forward axis is often rotated 90° — correct it
+          bimMesh.rotation.z = Math.PI / 2;
+
+          // Recompute position after rotation
+          const rb = new THREE.Box3().setFromObject(bimMesh);
+          const rc = new THREE.Vector3();
+          rb.getCenter(rc);
+          bimMesh.position.set(
+            pcInfo.center.x - rc.x + bimMesh.position.x,
+            pcInfo.center.y - rc.y + bimMesh.position.y,
+            pcInfo.box.min.z - rb.min.z + bimMesh.position.z
+          );
+
           scene.add(bimMesh);
           resolve();
         }, undefined, () => resolve());
@@ -365,16 +392,20 @@
 
     // ── Drone image plane ──
     function loadDronePlane(pcInfo) {
-      new THREE.TextureLoader().load('./drone.jpg', tex => {
-        const geo = new THREE.PlaneGeometry(pcInfo.size.x * 1.5, pcInfo.size.y * 1.5);
-        const mat = new THREE.MeshBasicMaterial({
-          map: tex, transparent: true, opacity: 0.72,
-          side: THREE.DoubleSide, depthWrite: false,
-        });
-        dronePlane = new THREE.Mesh(geo, mat);
-        dronePlane.position.set(pcInfo.center.x, pcInfo.center.y, pcInfo.box.max.z + 15);
-        scene.add(dronePlane);
-      });
+      // Try both cases for the filename
+      const tryLoad = (path, fallback) => {
+        new THREE.TextureLoader().load(path, tex => {
+          const geo = new THREE.PlaneGeometry(pcInfo.size.x * 1.5, pcInfo.size.y * 1.5);
+          const mat = new THREE.MeshBasicMaterial({
+            map: tex, transparent: true, opacity: 0.72,
+            side: THREE.DoubleSide, depthWrite: false,
+          });
+          dronePlane = new THREE.Mesh(geo, mat);
+          dronePlane.position.set(pcInfo.center.x, pcInfo.center.y, pcInfo.box.max.z + 15);
+          scene.add(dronePlane);
+        }, undefined, () => { if (fallback) tryLoad(fallback, null); });
+      };
+      tryLoad('./drone.jpg', './drone.JPG');
     }
 
     // ── Toggles ──
