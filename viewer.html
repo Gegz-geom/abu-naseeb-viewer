@@ -4,6 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>3D Viewer — Abu Naseeb Al-Baghdaddiya Family House</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230A0A0F'/><path d='M6 13L16 6l10 7v12a1 1 0 01-1 1H7a1 1 0 01-1-1z' fill='%23C9A84C'/><rect x='13' y='14' width='6' height='8' fill='%230A0A0F'/></svg>" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
@@ -56,12 +57,7 @@
     .loading-bar-track{width:240px;height:2px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;}
     .loading-bar-fill{height:100%;background:var(--gold);border-radius:2px;width:0%;transition:width 0.3s ease;}
     .loading-text{font-size:10px;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase;}
-    #img-modal{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.88);backdrop-filter:blur(8px);align-items:center;justify-content:center;}
-    #img-modal.show{display:flex;}
-    #img-modal img{max-width:88vw;max-height:85vh;border-radius:8px;border:1px solid var(--border);}
-    .modal-close{position:absolute;top:24px;right:28px;font-size:22px;color:var(--muted);cursor:pointer;background:none;border:none;transition:color 0.2s;}
-    .modal-close:hover{color:var(--text);}
-    .modal-label{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase;white-space:nowrap;}
+
   </style>
 </head>
 <body>
@@ -104,10 +100,7 @@
     <div class="layer-left"><div class="layer-dot dot-bim"></div><div><div class="layer-name">BIM Model</div><div class="layer-sub">Revit · GLTF</div></div></div>
     <div class="toggle" id="toggle-bim"></div>
   </div>
-  <div class="layer-item" onclick="toggleLayer('img')">
-    <div class="layer-left"><div class="layer-dot dot-img"></div><div><div class="layer-name">Drone Image</div><div class="layer-sub">DJI · Site Photo</div></div></div>
-    <div class="toggle on" id="toggle-img"></div>
-  </div>
+
 </div>
 <div id="stats-bar">
   <div class="stat-pill">Lat <em>21.4738°N</em></div>
@@ -115,15 +108,11 @@
   <div class="stat-pill">Alt <em>~245m</em></div>
 </div>
 <div id="hint">Left drag · Rotate<br>Right drag · Pan<br>Scroll · Zoom</div>
-<div id="img-modal">
-  <button class="modal-close" onclick="closeModal()">✕</button>
-  <img src="drone.JPG" onerror="this.src='drone.jpg'" alt="Drone site image"/>
-  <div class="modal-label">DJI Drone · Abu Naseeb Al-Baghdaddiya · Makkah</div>
-</div>
+
 <script>
 // Point cloud loaded from merged pointcloud.pcbn
   // ── State ──
-  const layerState = {pc:true, bim:false, img:true};
+  const layerState = {pc:true, bim:false, img:false};
   let pcPoints=null, bimMesh=null, dronePlane=null;
   let sceneCenter=new THREE.Vector3(), sceneSize=new THREE.Vector3(), sceneBox=null;
 
@@ -148,9 +137,11 @@
   controls.rotateSpeed=0.4; controls.zoomSpeed=0.6; controls.panSpeed=0.4;
   controls.minDistance=1; controls.maxDistance=800;
 
-  scene.add(new THREE.AmbientLight(0xffffff,0.8));
-  const sun=new THREE.DirectionalLight(0xfff8e7,1.0);
+  scene.add(new THREE.AmbientLight(0xfff4e0, 0.6));
+  const sun=new THREE.DirectionalLight(0xfff8f0, 1.2);
   sun.position.set(60,100,50); scene.add(sun);
+  const fill=new THREE.DirectionalLight(0xc8d8ff, 0.35);
+  fill.position.set(-40,20,-30); scene.add(fill);
 
   window.addEventListener('resize',()=>{
     const w=container.clientWidth,h=container.clientHeight;
@@ -287,24 +278,37 @@
           pcInfo.box.min.y-bb2.min.y,
           pcInfo.center.z-c2.z
         );
-        // Color by element type from node name (Revit has no material data exported)
+        // Solid architectural colors by element type — fully opaque, matte
+        const BIM_COLORS = {
+          wall:     {col:0xC8B49A, tr:false, op:1.0},  // sandstone
+          floor:    {col:0x7A6E65, tr:false, op:1.0},  // dark stone
+          ceil:     {col:0xDDD0BE, tr:false, op:1.0},  // plaster
+          roof:     {col:0x8C6E52, tr:false, op:1.0},  // terracotta
+          stair:    {col:0xA89880, tr:false, op:1.0},  // concrete
+          door:     {col:0x6B4510, tr:false, op:1.0},  // dark timber
+          window:   {col:0xA8DCF0, tr:true,  op:0.4},  // glass
+          column:   {col:0xC8B860, tr:false, op:1.0},  // structural
+          beam:     {col:0xC8B860, tr:false, op:1.0},
+          railing:  {col:0x606870, tr:false, op:1.0},  // dark metal
+          rail:     {col:0x606870, tr:false, op:1.0},
+          furniture:{col:0xB89040, tr:false, op:1.0},
+          casework: {col:0xB89040, tr:false, op:1.0},
+          tree:     {col:0x4A7A40, tr:false, op:1.0},
+          plant:    {col:0x4A7A40, tr:false, op:1.0},
+        };
+        const DEFAULT_BIM = {col:0xBCAA92, tr:false, op:1.0};
+
         bimMesh.traverse(ch=>{
           if(!ch.isMesh) return;
           const nm=(ch.parent?.name||ch.name||'').toLowerCase();
-          let col=0xccbbaa; // default: warm stone
-          if(nm.includes('wall'))    col=0xd4c4b0;  // sandstone
-          if(nm.includes('floor'))   col=0xb8a898;  // dark stone
-          if(nm.includes('ceil'))    col=0xe8ddd0;  // light plaster
-          if(nm.includes('roof'))    col=0xa09080;  // terracotta
-          if(nm.includes('stair'))   col=0xc0b0a0;  // concrete
-          if(nm.includes('door'))    col=0x8B6914;  // wood brown
-          if(nm.includes('window'))  col=0x7ec8e3;  // glass blue
-          if(nm.includes('column')||nm.includes('beam')) col=0xd8c890; // structural
-          if(nm.includes('railing')||nm.includes('rail')) col=0x909090; // metal
-          if(nm.includes('furniture')||nm.includes('casework')) col=0xC8A878;
-          ch.material=new THREE.MeshPhongMaterial({
-            color:col, transparent:true, opacity:0.6,
-            side:THREE.DoubleSide, depthWrite:false, shininess:15,
+          let cfg = DEFAULT_BIM;
+          for(const [key,val] of Object.entries(BIM_COLORS)){
+            if(nm.includes(key)){cfg=val;break;}
+          }
+          ch.material=new THREE.MeshLambertMaterial({
+            color:cfg.col,
+            transparent:cfg.tr, opacity:cfg.op,
+            side:THREE.FrontSide,
           });
         });
         bimMesh.visible=layerState.bim;
@@ -336,24 +340,21 @@
     document.getElementById('toggle-'+id).classList.toggle('on',layerState[id]);
     if(id==='pc'  && pcPoints)  pcPoints.visible=layerState.pc;
     if(id==='bim' && bimMesh)   bimMesh.visible=layerState.bim;
-    if(id==='img'){
-      if(dronePlane) dronePlane.visible=layerState.img;
-      document.getElementById('img-modal').classList.toggle('show',layerState.img);
-    }
+    if(id==='img' && dronePlane) dronePlane.visible=layerState.img;
   }
-  function closeModal(){
-    document.getElementById('img-modal').classList.remove('show');
-    layerState.img=false;
-    document.getElementById('toggle-img').classList.remove('on');
-    if(dronePlane) dronePlane.visible=false;
-  }
-  document.getElementById('img-modal').addEventListener('click',e=>{
-    if(e.target===document.getElementById('img-modal'))closeModal();
-  });
+
 
   // ── Boot ──
   (async()=>{
     try{
+      // Check URL param for which layer to default to
+      const urlLayer = new URLSearchParams(window.location.search).get('layer');
+      if(urlLayer==='bim'){
+        layerState.pc=false; layerState.bim=true;
+        document.getElementById('toggle-pc').classList.remove('on');
+        document.getElementById('toggle-bim').classList.add('on');
+      }
+
       const pcInfo=await loadPointCloud();
       setProgress(82,'Loading BIM…');
       await loadBIM(pcInfo);
@@ -361,7 +362,6 @@
       loadDronePlane(pcInfo);
       setProgress(100,'Ready');
       setTimeout(()=>{
-        document.getElementById('img-modal').classList.add('show');
         document.getElementById('loading-overlay').classList.add('hidden');
       },500);
     }catch(err){

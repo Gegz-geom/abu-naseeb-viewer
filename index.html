@@ -12,8 +12,6 @@
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     :root{--gold:#C9A84C;--gold-light:#E8C97A;--dark:#0A0A0F;--panel:rgba(10,10,15,0.94);--text:#F0EDE6;--muted:#7A7870;--border:rgba(201,168,76,0.15);}
     html,body{width:100%;height:100%;overflow:hidden;background:var(--dark);}
-
-    /* Header */
     #header{position:fixed;top:0;left:0;right:0;z-index:200;height:56px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;backdrop-filter:blur(14px);}
     .header-left{display:flex;align-items:center;gap:12px;}
     .logo-mark{width:30px;height:30px;border:1.5px solid var(--gold);border-radius:6px;display:flex;align-items:center;justify-content:center;}
@@ -23,84 +21,44 @@
     .header-right{display:flex;align-items:center;gap:16px;}
     .tag{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;}
     .coord-badge{font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);background:rgba(201,168,76,0.08);border:1px solid var(--border);padding:4px 10px;border-radius:4px;}
-
-    /* Map */
     #map{position:fixed;top:56px;left:0;right:0;bottom:0;}
-
-    /* Stats strip */
     #stats-strip{position:fixed;top:72px;left:20px;display:flex;flex-direction:column;gap:6px;z-index:100;}
     .stat-card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:7px 12px;backdrop-filter:blur(8px);}
     .stat-label{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:1px;}
     .stat-value{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--gold);}
-
-    /* Click hint */
-    #click-hint{
-      position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
-      background:var(--panel);border:1px solid var(--border);border-radius:24px;
-      padding:8px 20px;font-family:'DM Mono',monospace;font-size:10px;
-      color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;
-      backdrop-filter:blur(8px);z-index:100;
-      display:flex;align-items:center;gap:8px;
-      animation:float 3s ease-in-out infinite;
-    }
+    #click-hint{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--border);border-radius:24px;padding:8px 20px;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;backdrop-filter:blur(8px);z-index:100;display:flex;align-items:center;gap:8px;transition:opacity 0.3s;animation:float 3s ease-in-out infinite;}
     .hint-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:blink 1.4s ease-in-out infinite;}
     @keyframes float{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(-4px);}}
     @keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
 
     /* Side panel */
-    #side-panel{
-      position:fixed;top:56px;right:0;bottom:0;width:340px;
-      background:var(--panel);border-left:1px solid var(--border);
-      backdrop-filter:blur(16px);z-index:150;
-      transform:translateX(100%);transition:transform 0.42s cubic-bezier(0.4,0,0.2,1);
-      display:flex;flex-direction:column;overflow:hidden;
-    }
+    #side-panel{position:fixed;top:56px;right:0;bottom:0;width:320px;background:var(--panel);border-left:1px solid var(--border);backdrop-filter:blur(16px);z-index:150;transform:translateX(100%);transition:transform 0.4s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;overflow:hidden;}
     #side-panel.open{transform:translateX(0);}
-
-    .sp-close{position:absolute;top:14px;right:16px;width:28px;height:28px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:14px;transition:all 0.15s;}
+    .sp-close{position:absolute;top:14px;right:14px;width:28px;height:28px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:13px;transition:all 0.15s;z-index:10;}
     .sp-close:hover{background:rgba(201,168,76,0.1);color:var(--gold);}
-
-    .sp-image-wrap{position:relative;height:220px;overflow:hidden;flex-shrink:0;}
+    .sp-image-wrap{position:relative;height:200px;overflow:hidden;flex-shrink:0;}
     .sp-image-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
-    .sp-image-overlay{position:absolute;inset:0;background:linear-gradient(to bottom, transparent 40%, rgba(10,10,15,0.95) 100%);}
+    .sp-image-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,rgba(10,10,15,0.97) 100%);}
     .sp-image-badge{position:absolute;top:12px;left:12px;background:rgba(10,10,15,0.7);border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;backdrop-filter:blur(4px);}
-
-    .sp-body{padding:20px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:0;}
+    .sp-body{padding:20px;flex:1;overflow-y:auto;display:flex;flex-direction:column;}
     .sp-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;}
-    .sp-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--text);line-height:1.2;margin-bottom:6px;}
-    .sp-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);line-height:1.7;margin-bottom:18px;}
-
-    .sp-divider{height:1px;background:var(--border);margin:4px 0 18px;}
-
-    .sp-meta{display:flex;flex-direction:column;gap:7px;margin-bottom:20px;}
-    .sp-meta-row{display:flex;justify-content:space-between;align-items:center;}
+    .sp-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--text);line-height:1.2;margin-bottom:6px;}
+    .sp-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);line-height:1.75;margin-bottom:16px;}
+    .sp-divider{height:1px;background:var(--border);margin:0 0 16px;}
+    .sp-meta{display:flex;flex-direction:column;gap:7px;margin-bottom:16px;}
+    .sp-meta-row{display:flex;justify-content:space-between;}
     .sp-meta-key{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
     .sp-meta-val{font-family:'DM Mono',monospace;font-size:10px;color:var(--text);}
-
+    .sp-divider2{height:1px;background:var(--border);margin:0 0 14px;}
     .sp-section-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
 
-    .viewer-btns{display:flex;flex-direction:column;gap:8px;margin-top:4px;}
-    .viewer-btn{
-      display:flex;align-items:center;gap:12px;padding:14px 16px;
-      border-radius:8px;border:1px solid var(--border);cursor:pointer;
-      background:rgba(255,255,255,0.03);transition:all 0.18s;text-decoration:none;
-    }
-    .viewer-btn:hover{border-color:rgba(201,168,76,0.4);background:rgba(201,168,76,0.06);transform:translateX(3px);}
-    .viewer-btn-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-    .btn-pc .viewer-btn-icon{background:rgba(126,200,227,0.12);border:1px solid rgba(126,200,227,0.2);}
-    .btn-bim .viewer-btn-icon{background:rgba(168,216,168,0.12);border:1px solid rgba(168,216,168,0.2);}
-    .viewer-btn-text .btn-name{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;}
-    .viewer-btn-text .btn-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.08em;}
-    .viewer-btn-arrow{margin-left:auto;color:var(--muted);font-size:14px;transition:color 0.15s;}
-    .viewer-btn:hover .viewer-btn-arrow{color:var(--gold);}
-
-    /* Marker */
-    .custom-marker{cursor:pointer;}
-    .marker-ring{width:50px;height:50px;border-radius:50%;border:2px solid var(--gold);background:rgba(201,168,76,0.15);display:flex;align-items:center;justify-content:center;animation:pulse 2.5s ease-in-out infinite;position:relative;}
-    .marker-ring::before{content:'';position:absolute;width:68px;height:68px;border-radius:50%;border:1px solid rgba(201,168,76,0.3);animation:pulse-outer 2.5s ease-in-out infinite;}
-    .marker-icon{width:20px;height:20px;fill:var(--gold);}
-    @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,0.4);}50%{box-shadow:0 0 0 14px rgba(201,168,76,0);}}
-    @keyframes pulse-outer{0%,100%{opacity:0.5;transform:scale(1);}50%{opacity:0;transform:scale(1.2);}}
+    /* Single viewer button */
+    .viewer-btn{display:flex;align-items:center;gap:14px;padding:16px;border-radius:10px;border:1px solid rgba(201,168,76,0.25);cursor:pointer;background:rgba(201,168,76,0.05);transition:all 0.18s;text-decoration:none;margin-top:2px;}
+    .viewer-btn:hover{border-color:rgba(201,168,76,0.5);background:rgba(201,168,76,0.1);transform:translateY(-1px);box-shadow:0 4px 20px rgba(201,168,76,0.12);}
+    .vb-icon{width:40px;height:40px;border-radius:8px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .vb-text .vb-name{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--gold);margin-bottom:3px;}
+    .vb-text .vb-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.06em;}
+    .vb-arrow{margin-left:auto;color:var(--gold);font-size:16px;}
 
     .mapboxgl-ctrl-bottom-right{bottom:28px;right:20px;}
     .mapboxgl-ctrl-group{background:var(--panel)!important;border:1px solid var(--border)!important;border-radius:8px!important;}
@@ -125,20 +83,19 @@
 <div id="map"></div>
 
 <div id="stats-strip">
-  <div class="stat-card"><div class="stat-label">Point Cloud</div><div class="stat-value">3,907,305</div></div>
+  <div class="stat-card"><div class="stat-label">Point Cloud</div><div class="stat-value">3,907,305 pts</div></div>
   <div class="stat-card"><div class="stat-label">BIM Elements</div><div class="stat-value">1,521</div></div>
 </div>
 
 <div id="click-hint">
   <div class="hint-dot"></div>
-  Click the building to explore
+  Click the site boundary to explore
 </div>
 
-<!-- Side panel -->
 <div id="side-panel">
   <div class="sp-close" onclick="closePanel()">✕</div>
   <div class="sp-image-wrap">
-    <img src="drone.JPG" onerror="this.src='drone.jpg'" alt="Site drone photo" />
+    <img src="drone.JPG" onerror="this.src='drone.jpg'" alt="Drone photo" />
     <div class="sp-image-overlay"></div>
     <div class="sp-image-badge">DJI · Aerial Survey</div>
   </div>
@@ -148,44 +105,32 @@
     <div class="sp-sub">Historic family residence documented via photogrammetric laser scanning and BIM reconstruction.</div>
     <div class="sp-divider"></div>
     <div class="sp-meta">
-      <div class="sp-meta-row"><span class="sp-meta-key">Capture Method</span><span class="sp-meta-val">Photogrammetry + E57</span></div>
-      <div class="sp-meta-row"><span class="sp-meta-key">BIM Software</span><span class="sp-meta-val">Autodesk Revit</span></div>
+      <div class="sp-meta-row"><span class="sp-meta-key">Capture</span><span class="sp-meta-val">Photogrammetry + E57</span></div>
+      <div class="sp-meta-row"><span class="sp-meta-key">BIM</span><span class="sp-meta-val">Autodesk Revit</span></div>
       <div class="sp-meta-row"><span class="sp-meta-key">Points</span><span class="sp-meta-val">3,907,305</span></div>
       <div class="sp-meta-row"><span class="sp-meta-key">Elevation</span><span class="sp-meta-val">~245m ASL</span></div>
     </div>
-    <div class="sp-divider"></div>
-    <div class="sp-section-label">Open in 3D Viewer</div>
-    <div class="viewer-btns">
-      <a class="viewer-btn btn-pc" href="viewer.html?layer=pc">
-        <div class="viewer-btn-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="2" fill="#7EC8E3"/><circle cx="6" cy="8" r="1.5" fill="#7EC8E3" opacity="0.7"/><circle cx="18" cy="7" r="1.5" fill="#7EC8E3" opacity="0.7"/><circle cx="5" cy="16" r="1.5" fill="#7EC8E3" opacity="0.5"/><circle cx="19" cy="16" r="1.5" fill="#7EC8E3" opacity="0.5"/><circle cx="11" cy="5" r="1.5" fill="#7EC8E3" opacity="0.8"/><circle cx="14" cy="19" r="1.5" fill="#7EC8E3" opacity="0.6"/></svg>
-        </div>
-        <div class="viewer-btn-text">
-          <div class="btn-name">Point Cloud</div>
-          <div class="btn-sub">3,907,305 pts · E57 Laser Scan</div>
-        </div>
-        <div class="viewer-btn-arrow">→</div>
-      </a>
-      <a class="viewer-btn btn-bim" href="viewer.html?layer=bim">
-        <div class="viewer-btn-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A8D8A8" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>
-        </div>
-        <div class="viewer-btn-text">
-          <div class="btn-name">BIM Model</div>
-          <div class="btn-sub">1,521 elements · Autodesk Revit</div>
-        </div>
-        <div class="viewer-btn-arrow">→</div>
-      </a>
-    </div>
+    <div class="sp-divider2"></div>
+    <div class="sp-section-label">3D Documentation</div>
+    <a class="viewer-btn" href="viewer.html">
+      <div class="vb-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.5">
+          <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+          <circle cx="12" cy="12" r="2" fill="#C9A84C" stroke="none"/>
+        </svg>
+      </div>
+      <div class="vb-text">
+        <div class="vb-name">Open 3D Viewer</div>
+        <div class="vb-sub">Point Cloud · BIM Model</div>
+      </div>
+      <div class="vb-arrow">→</div>
+    </a>
   </div>
 </div>
 
 <script>
   mapboxgl.accessToken = 'pk.eyJ1IjoiZ2VneiIsImEiOiJjbW1mNnFiMGgwNHk0MnJzOGNxZGlkZWxiIn0.TYBYIz11EXa1G900cxBstw';
-  const COORDS = [39.19069109, 21.47360500];
 
-  // Site boundary polygon — approximate from known centre + scan extents (~111m x 113m)
-  // Refined to match the actual building compound
   const SITE_POLY = [[
     [39.19038410152049, 21.47379729632334],
     [39.190739965354766, 21.47389002153494],
@@ -196,92 +141,46 @@
     [39.19038410152049, 21.47379729632334],
   ]];
 
-  let panelOpen = false;
+  const CENTRE = [39.19069109, 21.47360500];
 
   const map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/satellite-streets-v12',
-    center: COORDS,
+    center: CENTRE,
     zoom: 15.5,
-    pitch: 55,
-    bearing: -20,
+    pitch: 50,
+    bearing: -15,
     antialias: true,
   });
 
   map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
 
   map.on('load', () => {
-    // Terrain
-    map.addSource('mapbox-dem', {
-      type: 'raster-dem',
-      url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
-      tileSize: 512,
-    });
-    map.setTerrain({source:'mapbox-dem', exaggeration:1.1});
-
-    // ── All buildings in muted dark ──
-    map.addLayer({
-      id: '3d-buildings',
-      source: 'composite',
-      'source-layer': 'building',
-      filter: ['==', 'extrude', 'true'],
-      type: 'fill-extrusion',
-      minzoom: 13,
-      paint: {
-        'fill-extrusion-color': '#141420',
-        'fill-extrusion-height': ['interpolate',['linear'],['zoom'],14,0,14.5,['get','height']],
-        'fill-extrusion-base':   ['interpolate',['linear'],['zoom'],14,0,14.5,['get','min_height']],
-        'fill-extrusion-opacity': 0.8,
-      }
-    });
-
-    // ── Dim overlay for everything OUTSIDE the site ──
-    // We use a full-world polygon minus the site cutout (inverted mask)
+    // ── Dim mask — everything outside the site ──
     map.addSource('dim-mask', {
       type: 'geojson',
       data: {
         type: 'Feature',
         geometry: {
           type: 'Polygon',
-          // World bbox with site hole (reverse winding for hole)
           coordinates: [
-            [[-180,-85],[180,-85],[180,85],[-180,85],[-180,-85]],  // outer ring
-            SITE_POLY[0].slice().reverse(),                          // hole = site (reversed)
+            [[-180,-85],[180,-85],[180,85],[-180,85],[-180,-85]],
+            [...SITE_POLY[0]].reverse(),
           ]
         }
       }
     });
-
     map.addLayer({
       id: 'dim-overlay',
       type: 'fill',
       source: 'dim-mask',
-      paint: {
-        'fill-color': '#000000',
-        'fill-opacity': 0.52,
-      }
+      paint: {'fill-color':'#000000','fill-opacity':0.55}
     });
 
-    // ── Site footprint source ──
+    // ── Site source ──
     map.addSource('site', {
       type: 'geojson',
-      data: {
-        type: 'Feature',
-        geometry: { type: 'Polygon', coordinates: SITE_POLY },
-        properties: {}
-      }
-    });
-
-    // Gold border outline
-    map.addLayer({
-      id: 'site-outline',
-      type: 'line',
-      source: 'site',
-      paint: {
-        'line-color': '#C9A84C',
-        'line-width': 2,
-        'line-opacity': 0.9,
-      }
+      data: {type:'Feature', geometry:{type:'Polygon', coordinates:SITE_POLY}, properties:{}}
     });
 
     // Subtle gold fill
@@ -289,44 +188,51 @@
       id: 'site-fill',
       type: 'fill',
       source: 'site',
-      paint: {
-        'fill-color': '#C9A84C',
-        'fill-opacity': 0.06,
-      }
+      paint: {'fill-color':'#C9A84C','fill-opacity':0.08}
     });
 
-    // Clickable transparent hit area
+    // Gold border — animated via paint update
+    map.addLayer({
+      id: 'site-outline',
+      type: 'line',
+      source: 'site',
+      paint: {'line-color':'#C9A84C','line-width':2.5,'line-opacity':1}
+    });
+
+    // Glowing outer line
+    map.addLayer({
+      id: 'site-glow',
+      type: 'line',
+      source: 'site',
+      paint: {'line-color':'#C9A84C','line-width':8,'line-opacity':0.15,'line-blur':4}
+    });
+
+    // Click zone
     map.on('click', 'site-fill', openPanel);
-    map.on('mouseenter', 'site-fill', () => { map.getCanvas().style.cursor = 'pointer'; });
-    map.on('mouseleave', 'site-fill', () => { map.getCanvas().style.cursor = ''; });
-
-    // Cinematic fly-in
-    map.flyTo({
-      center: COORDS,
-      zoom: 18.2,
-      pitch: 62,
-      bearing: 22,
-      duration: 3200,
-      essential: true,
-      curve: 1.4,
+    map.on('mouseenter', 'site-fill', () => {
+      map.getCanvas().style.cursor = 'pointer';
+      map.setPaintProperty('site-outline','line-width', 3.5);
+      map.setPaintProperty('site-fill','fill-opacity', 0.14);
     });
+    map.on('mouseleave', 'site-fill', () => {
+      map.getCanvas().style.cursor = '';
+      map.setPaintProperty('site-outline','line-width', 2.5);
+      map.setPaintProperty('site-fill','fill-opacity', 0.08);
+    });
+
+    // Fly in
+    map.flyTo({center:CENTRE, zoom:18.0, pitch:58, bearing:18, duration:3000, curve:1.4, essential:true});
   });
 
   function openPanel() {
-    panelOpen = true;
     document.getElementById('side-panel').classList.add('open');
     document.getElementById('click-hint').style.opacity = '0';
-    document.getElementById('click-hint').style.pointerEvents = 'none';
-    // Shift map to give room to panel
-    map.easeTo({padding:{right:340}, duration:400});
+    map.easeTo({padding:{right:320}, duration:380});
   }
-
   function closePanel() {
-    panelOpen = false;
     document.getElementById('side-panel').classList.remove('open');
     document.getElementById('click-hint').style.opacity = '1';
-    document.getElementById('click-hint').style.pointerEvents = 'auto';
-    map.easeTo({padding:{right:0}, duration:400});
+    map.easeTo({padding:{right:0}, duration:380});
   }
 </script>
 </body>
