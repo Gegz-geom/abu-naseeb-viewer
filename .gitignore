@@ -1,0 +1,13 @@
+# Raw source data (too large for repo)
+pointcloud_raw/
+*.e57
+*.las
+*.laz
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+*.swp
