@@ -36,10 +36,17 @@
     #side-panel.open{transform:translateX(0);}
     .sp-close{position:absolute;top:14px;right:14px;width:28px;height:28px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:13px;transition:all 0.15s;z-index:10;}
     .sp-close:hover{background:rgba(201,168,76,0.1);color:var(--gold);}
-    .sp-image-wrap{position:relative;height:200px;overflow:hidden;flex-shrink:0;}
-    .sp-image-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
-    .sp-image-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,rgba(10,10,15,0.97) 100%);}
+    .sp-gallery{flex-shrink:0;}
+    .sp-gallery-main{position:relative;height:190px;overflow:hidden;}
+    .sp-gallery-main img{width:100%;height:100%;object-fit:cover;display:block;transition:opacity 0.3s;}
+    .sp-image-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,rgba(10,10,15,0.97) 100%);pointer-events:none;}
     .sp-image-badge{position:absolute;top:12px;left:12px;background:rgba(10,10,15,0.7);border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;backdrop-filter:blur(4px);}
+    .gallery-counter{position:absolute;bottom:10px;right:12px;font-family:'DM Mono',monospace;font-size:9px;color:rgba(255,255,255,0.5);letter-spacing:0.1em;}
+    .sp-thumbs{display:flex;gap:4px;padding:6px 0 2px;background:rgba(10,10,15,0.6);}
+    .sp-thumb{flex:1;height:52px;overflow:hidden;cursor:pointer;border-radius:4px;border:1.5px solid transparent;transition:border-color 0.2s;opacity:0.6;transition:opacity 0.2s,border-color 0.2s;}
+    .sp-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+    .sp-thumb:hover{opacity:0.85;}
+    .sp-thumb.active{border-color:var(--gold);opacity:1;}
     .sp-body{padding:20px;flex:1;overflow-y:auto;display:flex;flex-direction:column;}
     .sp-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;}
     .sp-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--text);line-height:1.2;margin-bottom:6px;}
@@ -94,10 +101,19 @@
 
 <div id="side-panel">
   <div class="sp-close" onclick="closePanel()">✕</div>
-  <div class="sp-image-wrap">
-    <img src="drone.JPG" onerror="this.src='drone.jpg'" alt="Drone photo" />
-    <div class="sp-image-overlay"></div>
-    <div class="sp-image-badge">DJI · Aerial Survey</div>
+  <div class="sp-gallery">
+    <div class="sp-gallery-main">
+      <img id="gallery-main-img" src="drone.JPG" onerror="this.src='drone.jpg'" alt="Drone photo" />
+      <div class="sp-image-overlay"></div>
+      <div class="sp-image-badge">DJI · Aerial Survey</div>
+      <div class="gallery-counter"><span id="gallery-idx">1</span> / 4</div>
+    </div>
+    <div class="sp-thumbs">
+      <div class="sp-thumb active" onclick="setPhoto(0)"><img src="drone.JPG" onerror="this.src='drone.jpg'" /></div>
+      <div class="sp-thumb" onclick="setPhoto(1)"><img src="DJI_0147.JPG" onerror="this.src='DJI_0147.jpg'" /></div>
+      <div class="sp-thumb" onclick="setPhoto(2)"><img src="DJI_0163.JPG" onerror="this.src='DJI_0163.jpg'" /></div>
+      <div class="sp-thumb" onclick="setPhoto(3)"><img src="DJI_0182.JPG" onerror="this.src='DJI_0182.jpg'" /></div>
+    </div>
   </div>
   <div class="sp-body">
     <div class="sp-label">Site Record · Makkah Al-Mukarramah</div>
@@ -233,6 +249,17 @@
     document.getElementById('side-panel').classList.remove('open');
     document.getElementById('click-hint').style.opacity = '1';
     map.easeTo({padding:{right:0}, duration:380});
+  }
+
+  const PHOTOS = ['drone.JPG','DJI_0147.JPG','DJI_0163.JPG','DJI_0182.JPG'];
+  function setPhoto(idx) {
+    document.getElementById('gallery-main-img').style.opacity = '0';
+    setTimeout(() => {
+      document.getElementById('gallery-main-img').src = PHOTOS[idx];
+      document.getElementById('gallery-main-img').style.opacity = '1';
+      document.getElementById('gallery-idx').textContent = idx + 1;
+    }, 150);
+    document.querySelectorAll('.sp-thumb').forEach((t,i) => t.classList.toggle('active', i===idx));
   }
 </script>
 </body>
