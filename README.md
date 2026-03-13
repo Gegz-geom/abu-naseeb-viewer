@@ -1,6 +1,6 @@
 # Abu Naseeb Al-Baghdaddiya Family House — 3D Web Viewer
 
-> Interactive web-based 3D documentation viewer for a historic family residence in Makkah Al-Mukarramah, Saudi Arabia. Combines a photogrammetric point cloud (3.9M points) with a BIM model reconstructed in Autodesk Revit, delivered entirely as a static site with no backend.
+> Interactive web-based 3D documentation viewer for a historic family residence in Jeddah, Saudi Arabia. Combines a photogrammetric point cloud (3.9M points) with a BIM model reconstructed in Autodesk Revit, delivered entirely as a static site with no backend.
 
 **Live:** [abu-naseeb-viewer.vercel.app](https://abu-naseeb-viewer.vercel.app)
 
